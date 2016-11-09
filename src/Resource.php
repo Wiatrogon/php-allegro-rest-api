@@ -22,8 +22,7 @@ class Resource
     public function getUri($data = null)
     {
         $uri = $this->parent->getUri() . $this->id . '/';
-        if ($data !== null)
-        {
+        if ($data !== null) {
             $uri .= '?';
             $uri .= http_build_query($data);
         }

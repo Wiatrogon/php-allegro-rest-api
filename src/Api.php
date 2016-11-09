@@ -7,6 +7,8 @@ class Api extends Resource
 
     const TOKEN_URI = 'https://ssl.allegro.pl/auth/oauth/token';
 
+    const AUTHORIZATION_URI = 'https://ssl.allegro.pl/auth/oauth/authorize';
+
     public function __construct($clientId, $clientSecret, $apiKey, $redirectUri, $accessToken, $refreshToken)
     {
         $this->clientId = $clientId;
@@ -30,6 +32,18 @@ class Api extends Resource
     public function getApiKey()
     {
         return $this->apiKey;
+    }
+
+    public function getAuthorizationUri()
+    {
+        $data = array(
+            'response_type' => 'code',
+            'client_id' => $this->clientId,
+            'api-key' => $this->apiKey,
+            'redirect_uri' => $this->redirectUri
+        );
+
+        return static::AUTHORIZATION_URI . '?' . http_build_query($data);
     }
 
     public function getNewAccessToken($code)
