@@ -70,14 +70,11 @@ class Resource
         $key = $this->getApiKey();
 
         $headers = array(
-            "Content-Type: application/json; charset=utf-8",
             "Authorization: Bearer $token",
-            "Api-Key: $key"
+            "Api-Key: $key",
+            "Content-Type: application/vnd.allegro.public.v1+json",
+            "Accept: application/vnd.allegro.public.v1+json"
         );
-
-        if ($method === 'GET') {
-            $headers[] = "Accept: application/vnd.allegro.public.v1+json";
-        }
 
         $data = json_encode($data);
 
