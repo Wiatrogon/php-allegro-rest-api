@@ -42,7 +42,7 @@ $api->categories->get();
 // GET https://allegroapi.io/categories/2
 $api->categories(2)->get();
 
-// PUT https://allegroapi.io/{resource}/{resource_id}/{command-name}-command/{uuid>}
+// PUT https://allegroapi.io/{resource}/{resource_id}/{command-name}-command/{uuid}
 // $api->{resource}({resource_id})->commands()->{command_name}($data);
 
 // PUT https://allegroapi.io/offers/12345/change-price-commands/84c16171-233a-42de-8115-1f1235c8bc0f
