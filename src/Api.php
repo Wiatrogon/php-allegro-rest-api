@@ -61,12 +61,12 @@ class Api extends Resource
 
     public function refreshAccessToken()
     {
-        $data = [
+        $data = array(
             'grant_type' => 'refresh_token',
             'api-key' => $this->apiKey,
             'refresh_token' => $this->refreshToken,
             'redirect_uri' => $this->redirectUri
-        ];
+        );
 
         return $this->requestAccessToken($data);
     }
