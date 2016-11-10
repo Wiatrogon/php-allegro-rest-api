@@ -30,7 +30,9 @@ class Resource
     }
 
     public function commands()
-    {}
+    {
+        return new Commands($this);
+    }
 
     public function get($data = null)
     {
