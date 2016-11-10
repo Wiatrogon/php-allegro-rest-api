@@ -9,7 +9,7 @@ class Api extends Resource
 
     const AUTHORIZATION_URI = 'https://ssl.allegro.pl/auth/oauth/authorize';
 
-    public function __construct($clientId, $clientSecret, $apiKey, $redirectUri, $accessToken, $refreshToken)
+    public function __construct($clientId, $clientSecret, $apiKey, $redirectUri, $accessToken = null, $refreshToken = null)
     {
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
