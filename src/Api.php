@@ -1,4 +1,5 @@
 <?php
+namespace Allegro\REST;
 
 class Api extends Resource
 {
