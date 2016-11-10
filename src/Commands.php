@@ -1,6 +1,8 @@
 <?php
+
 class Commands
 {
+
     public function __construct(Resource $resource)
     {
         $this->resource = $resource;
@@ -16,9 +18,19 @@ class Commands
         return $command->put($data);
     }
 
-    private function getUuid ()
+    private function getUuid()
     {
-        return '9b84e1bc-5341-45e7-837e-4250720e606f';
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
+        );
     }
 
     private $resource;
