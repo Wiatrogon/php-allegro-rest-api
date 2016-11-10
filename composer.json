@@ -1,0 +1,23 @@
+{
+    "name": "wiatrogon/allegro-rest-api",
+    "description": "simple interface for Allegro REST API",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Piotr Jakubik",
+            "email": "wiatrogon@gmail.com"
+        }
+    ],
+    "keywords" : [
+        "allegro",
+        "rest"
+    ],
+    "require": {
+        "php": ">=5.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Allegro\\REST\\": "src"
+        }
+    }
+}
