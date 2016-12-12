@@ -20,14 +20,9 @@ class Resource
         return $this->parent->getApiKey();
     }
 
-    public function getUri($data = null)
+    public function getUri()
     {
-        $uri = $this->parent->getUri() . $this->id . '/';
-        if ($data !== null) {
-            $uri .= '?';
-            $uri .= http_build_query($data);
-        }
-        return $uri;
+        return $this->parent->getUri() . $this->id . '/';
     }
 
     public function commands()
@@ -37,7 +32,14 @@ class Resource
 
     public function get($data = null)
     {
-        return $this->sendApiRequest($this->getUri($data), 'GET');
+        $uri = $this->getUri();
+
+        if ($data !== null) {
+            $uri .= '?';
+            $uri .= http_build_query($data);
+        }
+
+        return $this->sendApiRequest($uri, 'GET');
     }
 
     public function put($data)
@@ -52,7 +54,14 @@ class Resource
 
     public function delete($data = null)
     {
-        return $this->sendApiRequest($this->getUri($data), 'DELETE');
+        $uri = $this->getUri();
+
+        if ($data !== null) {
+            $uri .= '?';
+            $uri .= http_build_query($data);
+        }
+
+        return $this->sendApiRequest($uri, 'DELETE');
     }
 
     public function __get($name)
