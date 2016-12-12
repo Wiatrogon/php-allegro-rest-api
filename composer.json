@@ -19,5 +19,8 @@
         "psr-4": {
             "Allegro\\REST\\": "src"
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7"
     }
 }
