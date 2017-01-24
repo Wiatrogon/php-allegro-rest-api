@@ -83,7 +83,17 @@ class Api extends Resource
 
         $data = http_build_query($data);
 
-        return $this->sendHttpRequest(static::TOKEN_URI, 'POST', $headers, $data);
+        $response = $this->sendHttpRequest(static::TOKEN_URI, 'POST', $headers, $data);
+
+        $data = json_decode($response);
+
+        if (isset($data->access_token) && isset($data->refresh_token))
+        {
+            $this->accessToken = $data->access_token;
+            $this->refreshToken = $data->refresh_token;
+        }
+
+        return $response;
     }
 
     protected $clientId;
