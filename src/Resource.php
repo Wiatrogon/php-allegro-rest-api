@@ -20,9 +20,9 @@ class Resource
         return $this->parent->getApiKey();
     }
 
-    public function getUri($subcommand = false)
+    public function getUri()
     {
-        return $this->parent->getUri(true) . $this->id . ($subcommand?'/':'');
+        return $this->parent->getUri() . $this->id . '/';
     }
 
     public function commands()
