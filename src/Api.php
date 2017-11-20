@@ -4,7 +4,7 @@ namespace Allegro\REST;
 class Api extends Resource
 {
 
-    const API_URI = 'https://allegroapi.io/';
+    const API_URI = 'https://allegroapi.io';
 
     const TOKEN_URI = 'https://ssl.allegro.pl/auth/oauth/token';
 
