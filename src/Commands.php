@@ -3,7 +3,10 @@ namespace Allegro\REST;
 
 class Commands
 {
-
+    /**
+     * Commands constructor.
+     * @param Resource $resource
+     */
     public function __construct(Resource $resource)
     {
         $this->resource = $resource;
@@ -19,6 +22,9 @@ class Commands
         return $command->put($data);
     }
 
+    /**
+     * @return string
+     */
     private function getUuid()
     {
         return sprintf(
@@ -34,5 +40,8 @@ class Commands
         );
     }
 
+    /**
+     * @var Resource
+     */
     private $resource;
 }

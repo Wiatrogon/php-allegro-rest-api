@@ -10,6 +10,15 @@ class Api extends Resource
 
     const AUTHORIZATION_URI = 'https://ssl.allegro.pl/auth/oauth/authorize';
 
+    /**
+     * Api constructor.
+     * @param string $clientId
+     * @param string $clientSecret
+     * @param string $apiKey
+     * @param string $redirectUri
+     * @param null|string $accessToken
+     * @param null|string $refreshToken
+     */
     public function __construct($clientId, $clientSecret, $apiKey, $redirectUri,
                                 $accessToken = null, $refreshToken = null)
     {
@@ -21,21 +30,33 @@ class Api extends Resource
         $this->refreshToken = $refreshToken;
     }
 
+    /**
+     * @return string
+     */
     public function getUri()
     {
         return static::API_URI;
     }
 
+    /**
+     * @return null|string
+     */
     public function getAccessToken()
     {
         return $this->accessToken;
     }
 
+    /**
+     * @return string
+     */
     public function getApiKey()
     {
         return $this->apiKey;
     }
 
+    /**
+     * @return string
+     */
     public function getAuthorizationUri()
     {
         $data = array(
@@ -48,6 +69,10 @@ class Api extends Resource
         return static::AUTHORIZATION_URI . '?' . http_build_query($data);
     }
 
+    /**
+     * @param string $code
+     * @return object
+     */
     public function getNewAccessToken($code)
     {
         $data = array(
@@ -60,6 +85,9 @@ class Api extends Resource
         return $this->requestAccessToken($data);
     }
 
+    /**
+     * @return object
+     */
     public function refreshAccessToken()
     {
         $data = array(
@@ -72,6 +100,10 @@ class Api extends Resource
         return $this->requestAccessToken($data);
     }
 
+    /**
+     * @param array $data
+     * @return object
+     */
     private function requestAccessToken($data)
     {
         $authorization = base64_encode($this->clientId . ':' . $this->clientSecret);
@@ -96,15 +128,33 @@ class Api extends Resource
         return $response;
     }
 
+    /**
+     * @var string
+     */
     protected $clientId;
 
+    /**
+     * @var string
+     */
     protected $clientSecret;
 
+    /**
+     * @var string
+     */
     protected $apiKey;
 
+    /**
+     * @var string
+     */
     protected $redirectUri;
 
+    /**
+     * @var string
+     */
     protected $accessToken;
 
+    /**
+     * @var string
+     */
     protected $refreshToken;
 }
