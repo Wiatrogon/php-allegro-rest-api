@@ -6,9 +6,9 @@ class Api extends Resource
 
     const API_URI = 'https://allegroapi.io';
 
-    const TOKEN_URI = 'https://ssl.allegro.pl/auth/oauth/token';
+    const TOKEN_URI = 'https://allegro.pl/auth/oauth/token';
 
-    const AUTHORIZATION_URI = 'https://ssl.allegro.pl/auth/oauth/authorize';
+    const AUTHORIZATION_URI = 'https://allegro.pl/auth/oauth/authorize';
 
     /**
      * Api constructor.
