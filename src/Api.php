@@ -10,6 +10,8 @@ class Api extends Resource
 
     const AUTHORIZATION_URI = 'https://allegro.pl/auth/oauth/authorize';
 
+    const API_YAML_URI = 'https://developer.allegro.pl/swagger.yaml';
+
     /**
      * Api constructor.
      * @param string $clientId

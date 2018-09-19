@@ -13,7 +13,9 @@
         "rest"
     ],
     "require": {
-        "php": ">=5.3"
+        "php": ">=7.0",
+        "ext-json": "*",
+        "ext-yaml": "*"
     },
     "autoload": {
         "psr-4": {
