@@ -59,6 +59,7 @@ class Resource
             $uri .= '?';
             $uri .= http_build_query($data);
         }
+        $uri = preg_replace('/(%5B\d+%5D)/', '', $uri); // Removing [0],[1]... generated for params with nested arrays
 
         return $this->sendApiRequest($uri, 'GET');
     }
