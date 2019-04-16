@@ -1,8 +1,11 @@
 <?php
+
 namespace Allegro\REST;
 
 class Resource
 {
+
+    protected $_apiResource;
 
     /**
      * Resource constructor.
@@ -13,6 +16,26 @@ class Resource
     {
         $this->id = $id;
         $this->parent = $parent;
+    }
+
+    protected function apiResourse()
+    {
+        if (empty($this->_apiResource)) {
+            $apiResourse = (json_decode(file_get_contents(__DIR__ . '/swagger.json'), true))['paths'];
+            array_walk(
+                $apiResourse,
+                function (&$path, $index) {
+                    $path = array_shift(array_keys(($get = array_shift((array_shift($path))['responses']))['content']));
+                }
+            );
+            $res = array();
+            foreach ($apiResourse as $key => $value) {
+                preg_match_all('/(\/[A-Z-a-z]*)+/m', $key, $match);
+                $res[] = array('value' => $value, 'path' => implode('', array_shift($match)), 'pattern' => $key);
+            }
+            $this->_apiResource = $res;
+        }
+        return $this->_apiResource;
     }
 
     /**
@@ -54,13 +77,16 @@ class Resource
     public function get($data = null)
     {
         $uri = $this->getUri();
-
+        $content = (array_shift(array_filter($this->apiResourse(), function ($item) use ($uri) {
+            return strpos($uri, $item['path']);
+        })))['value'];
+        echo $content;
         if ($data !== null) {
             $uri .= '?';
             $uri .= http_build_query($data);
         }
-
-        return $this->sendApiRequest($uri, 'GET');
+        echo '<br>'.$uri;
+        return $this->sendApiRequest($uri, 'GET', array(), $content);
     }
 
     /**
@@ -115,16 +141,17 @@ class Resource
      * @param array $data
      * @return bool|string
      */
-    protected function sendApiRequest($url, $method, $data = array())
+    protected function sendApiRequest($url, $method, $data = array(), $content = 'application/vnd.allegro.public.v1+json')
     {
         $token = $this->getAccessToken();
         $key = $this->getApiKey();
 
+
         $headers = array(
             "Authorization: Bearer $token",
             "Api-Key: $key",
-            "Content-Type: application/vnd.allegro.public.v1+json",
-            "Accept: application/vnd.allegro.public.v1+json"
+            "Content-Type: " . $content,
+            "Accept: " . $content,
         );
 
         $data = json_encode($data);

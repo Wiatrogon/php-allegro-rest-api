@@ -4,11 +4,13 @@ namespace Allegro\REST;
 class Api extends Resource
 {
 
-    const API_URI = 'https://allegroapi.io';
+    const API_URI = 'https://api.allegro.pl';
 
     const TOKEN_URI = 'https://allegro.pl/auth/oauth/token';
 
     const AUTHORIZATION_URI = 'https://allegro.pl/auth/oauth/authorize';
+
+    const API_YAML_URI = 'https://developer.allegro.pl/swagger.yaml';
 
     /**
      * Api constructor.

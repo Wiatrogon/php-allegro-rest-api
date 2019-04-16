@@ -1,0 +1,4799 @@
+openapi: 3.0.0
+servers: []
+info:
+  description: 'https://developer.allegro.pl'
+  version: '1.0'
+  title: Allegro REST API
+  termsOfService: 'https://developer.allegro.pl/rules/'
+  contact:
+    email: api@allegro.pl
+  license:
+    name: Grupa Allegro Sp. z o. o.
+tags:
+  - name: offer-management
+  - name: offer-contacts
+  - name: user-ratings
+  - name: points-of-service
+  - name: after-sales-service-conditions
+  - name: pricing
+  - name: promotions
+  - name: offer-additional-services
+  - name: size-tables
+  - name: offer-variants
+  - name: offers-listing
+  - name: order-management
+paths:
+  '/offers/{offerId}/change-price-commands/{commandId}':
+    put:
+      tags:
+        - offer-management
+      summary: 'Modify the Buy Now price in an offer'
+      description: 'Use this resource to change the Buy Now price in a single offer. More information about this resource you can find <a href="https://developer.allegro.pl/news/2016-08-01-Zmiana-ceny/" target="_blank">here.</a>'
+      parameters:
+        - name: offerId
+          in: path
+          description: Offer identifier
+          required: true
+          schema:
+            type: string
+        - name: commandId
+          in: path
+          description: >-
+            Universally Unique  Identifier (UUID) you generate to enforce
+            idempotency. UUID specification: http://www.ietf.org/rfc/rfc4122.txt
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The command was created and queued for processing
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/ChangePrice'
+        default:
+          description: >-
+            An immediate error response is returned in the case it failed to
+            validate the command input data or there is an internal problem with
+            our systems
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+      requestBody:
+        content:
+          application/vnd.allegro.public.v1+json:
+            schema:
+              $ref: '#/components/schemas/ChangePriceWithoutOutput'
+        description: >-
+          Command input data. Note that the amount field must be transferred as
+          a string to avoid rounding errors. A currency must be provided as a
+          3-letter code as defined in ISO 4217.
+          (https://en.wikipedia.org/wiki/ISO_4217#Active_codes)
+        required: true
+  /sale/offers:
+    post:
+      tags:
+        - offer-management
+      summary: '[BETA] Create a draft offer'
+      description: '[BETA] Use this resource to create a draft offer draft. More information about this resource you can find <a href="https://developer.allegro.pl/sale/#step-5-draft" target="_blank">here.</a>'
+      operationId: createOfferUsingPOST
+      responses:
+        '200':
+          description: Offer created successfully
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '201':
+          description: Created
+        '400':
+          description: Syntactically incorrect request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable Entity
+      requestBody:
+        $ref: '#/components/requestBodies/Offer'
+  '/sale/offers/{offerId}':
+    put:
+      tags:
+        - offer-management
+      summary: '[BETA] Complete a draft offer draft or edit ongoing offers'
+      description: '[BETA] Use this resource to complete a draft offer draft or edit ongoing offers. More information about this resource you can find <a href="https://developer.allegro.pl/sale/#step-6-complete" target="_blank">here.</a>'
+      operationId: updateOfferUsingPUT
+      parameters:
+        - name: offerId
+          in: path
+          description: offerId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Offer updated successfully
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '201':
+          description: Created
+        '400':
+          description: Syntactically incorrect request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable Entity
+      requestBody:
+        $ref: '#/components/requestBodies/Offer'
+    get:
+      tags:
+        - offer-management
+      summary: '[BETA] Get all fields of the particular offer'
+      description: '[BETA] Use this resource to retrieve all fields of the particular offer. More information about this resource you can find <a href="https://developer.allegro.pl/sale/#similar-offer" target="_blank">here.</a>'
+      operationId: getOfferUsingGET
+      parameters:
+        - name: offerId
+          in: path
+          description: offerId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Offer returned successfully
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '400':
+          description: Syntactically incorrect request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/sale/offer-publication-commands/{commandId}':
+    put:
+      tags:
+        - offer-management
+      summary: '[BETA] Modify multiple offers publication at once.'
+      description: '[BETA] Use this resource to modify multiple offers publication at once. More information about this resource you can find <a href="https://developer.allegro.pl/sale/#step-7-offer-publication-commands" target="_blank">here.</a>'
+      operationId: changePublicationStatusUsingPUT
+      parameters:
+        - name: commandId
+          in: path
+          description: commandId
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Command was registered
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/GeneralReport'
+        '400':
+          description: Semantically incorrect request or provided conditions not correct
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '409':
+          description: Command id was already used
+        '422':
+          description: Unprocessable Entity
+      requestBody:
+        content:
+          application/vnd.allegro.beta.v1+json:
+            schema:
+              $ref: '#/components/schemas/PublicationChangeCommandDto'
+        description: publicationChangeCommandDto
+        required: true
+    get:
+      tags:
+        - offer-management
+      summary: '[BETA] Get a report summary for a particular commandId'
+      description: '[BETA] Use this resource to retrieve information about the offer listing statuses. You will receive a summary with a number of correctly listed offers and errors. More information about this resource you can find <a href="https://developer.allegro.pl/sale/#step-7-offer-publication-commands" target="_blank">here.</a>'
+      operationId: getPublicationReportUsingGET
+      parameters:
+        - name: commandId
+          in: path
+          description: commandId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: report was generated and successfully returned
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/GeneralReport'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Command not found
+  '/sale/offer-publication-commands/{commandId}/tasks':
+    get:
+      tags:
+        - offer-management
+      summary: '[BETA] Get a detailed report single command task'
+      description: '[BETA] Use this resource to retrieve information about the offer statuses on the site (Defaults: limit = 100, offset = 0). More information about this resource you can find <a href="https://developer.allegro.pl/sale/#step-7-offer-publication-commands" target="_blank">here.</a>'
+      operationId: getPublicationTasksUsingGET
+      parameters:
+        - name: commandId
+          in: path
+          description: commandId
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: limit
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: offset
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Task status successfully returned
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/TaskReport'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Command not found
+  '/users/{userId}/ratings-summary':
+    get:
+      tags:
+        - user-ratings
+      summary: Get user ratings-summary
+      description: 'Use this resource to receive feedback statistics. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-09-News_informacje_o_ocenach/" target="_blank">here.</a>'
+      operationId: getUserSummaryUsingGET
+      parameters:
+        - name: userId
+          in: path
+          description: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/UserRatingSummaryResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /sale/user-ratings:
+    get:
+      tags:
+        - user-ratings
+      summary: Get user-ratings
+      description: 'Use this resource to receive your sales score. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-09-News_informacje_o_ocenach/" target="_blank">here.</a>'
+      operationId: getUserRatingsUsingGET
+      parameters:
+        - name: user.id
+          in: query
+          description: 'Filter by user id, you are allowed to get your ratings only'
+          required: true
+          schema:
+            type: string
+        - name: recommended
+          in: query
+          description: Filter by recommended
+          required: false
+          schema:
+            type: string
+            enum:
+              - 'true'
+              - 'false'
+        - name: offset
+          in: query
+          description: Offset
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 20000
+            default: 0
+        - name: limit
+          in: query
+          description: Limit
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/UserRatingListResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /sale/offer-additional-services/groups:
+    post:
+      tags:
+        - offer-additional-services
+      summary: 'Create additional service group'
+      description: 'Use this resource to creates a group of addtional services. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-25-News_uslugi_dodatkowe/#2" target="_blank">here.</a>'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/AdditionalServicesGroupResponse'
+        '401':
+          description: Unauthorized
+        '422':
+          description: Unprocessable entity
+      requestBody:
+        $ref: '#/components/requestBodies/AdditionalServicesGroupRequest'
+    get:
+      tags:
+        - offer-additional-services
+      summary: 'Get additional service groups by user ID'
+      description: 'Use this resource to retrieve a list of groups with additional services available to a given user which you may assign to offers. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-25-News_uslugi_dodatkowe/#4" target="_blank">here.</a>'
+      parameters:
+        - name: offset
+          in: query
+          description: offset
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          description: limit
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 1000
+        - name: user.id
+          in: query
+          description: User ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/AdditionalServicesGroups'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /sale/loyalty/promotions:
+    post:
+      tags:
+        - promotions
+      summary: Creates a new promotion
+      description: |
+        This endpoint creates a new promotion. You can define the following types of promotions:
+
+        1. Bundle
+        In order to create a new bundle, you have to define a
+         promotion with a single benefit of type **ORDER_FIXED_DISCOUNT** and a single criterion of type **CONTAINS_OFFERS**. In the benefit specification you have to declare the discount amount that you want to be deducted from the sum of bundled offers prices. In the offer criterion you need to pass a list of offers that are to be grouped as a bundle. For each offer you have to define a fixed quantity (that many pieces of your offer will be part of the bundle) and you also have to set a promotionEntryPoint flag (offers with this flag set to true will have a section that allows the users to purchase your bundle).
+
+        2. Multipack
+        In order to create a new multipack, you have to define a promotion with a single benefit of type **UNIT_PERCENTAGE_DISCOUNT** and a single criterion of type **CONTAINS_OFFERS**. The benefit specification should contain a configuration section with a percentage which indicates the specific discount for the discounted offer. This percentage should be an integer value greater than 15 for quantity 2, greater than 30 for quantity 3, greater than 40 for quantity 4, greater than 50 for quantity 5 and lower than or equal to 100. The specification should also contain a trigger section with a field forEachQuantity that defines the amount of items in the multipack which is necessary to trigger the benefit. Additionally, the discountedNumber field must be set to 1 by default as you can only discount one unit in a multipack. Finally, the offer criterion specifies the offer for which the multipack promotion will take effect.
+
+        More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-18-News_promocyjne_zestawy_ofert/" target="_blank">here (Bundles)</a> and <a href="https://developer.allegro.pl/news/2018-02-01-Rabaty_ilosciowe/" target="_blank">here (Multipack)</a>.
+
+        **Example request bodies:**
+        1) Bundle
+        ```
+        {
+          "benefits": [
+            {
+              "specification": {
+                "type": "ORDER_FIXED_DISCOUNT",
+                "value": {
+                  "amount": "10",
+                  "currency": "PLN"
+                }
+              }
+            }
+          ],
+          "offerCriteria": [
+            {
+              "type": "CONTAINS_OFFERS",
+              "offers": [
+                {
+                  "id": "1122334455",
+                  "quantity": 2,
+                  "promotionEntryPoint": true
+                },
+                {
+                  "id": "2233445566",
+                  "quantity": 1,
+                  "promotionEntryPoint": false
+                }
+              ]
+            }
+          ]
+        }
+        ```
+        2) Multipack
+        ```
+        {
+          "benefits": [
+            {
+              "specification": {
+                "type": "UNIT_PERCENTAGE_DISCOUNT",
+                "configuration": {
+                  "percentage": "100"
+                },
+                "trigger": {
+                  "forEachQuantity": "3",
+                  "discountedNumber": "1"
+                }
+              }
+            }
+          ],
+          "offerCriteria": [
+            {
+              "type": "CONTAINS_OFFERS",
+              "offers": [
+                {
+                  "id": "1122334455"
+                }
+              ]
+            }
+          ]
+        }
+        ```
+      operationId: createPromotionUsingPOST_1
+      parameters:
+        - name: details
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: authenticated
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '201':
+          description: Successfully created the requested promotion
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/SellerRebateDto'
+        '400':
+          description: Bad request
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '422':
+          description: >-
+            Validation failed - your request was correct, but the promotion
+            could not be created.
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+      requestBody:
+        content:
+          application/vnd.allegro.public.v1+json:
+            schema:
+              $ref: '#/components/schemas/SellerCreateRebateRequestDto'
+        description: request
+        required: true
+    get:
+      tags:
+        - promotions
+      summary: Get a list of promotions by user id
+      description: >-
+       Get a list of promotions defined by the specified user. You can list
+        only your own promotions.
+        More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-18-News_promocyjne_zestawy_ofert/#2" target="_blank">here (Bundles)</a> and <a href="https://developer.allegro.pl/news/2018-02-01-Rabaty_ilosciowe/#2" target="_blank">here (Multipack)</a>.
+      operationId: listSellerPromotionsUsingGET_1
+      parameters:
+        - name: user.id
+          in: query
+          description: user.id
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: limit
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 50
+        - name: offset
+          in: query
+          description: offset
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: details
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: authenticated
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successfully returned the requested list of promotions
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/SellerRebatesDto'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized action
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '404':
+          description: User id not found
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+  /pricing/fee-preview:
+    post:
+      tags:
+        - pricing
+      summary: Calculates fee preview
+      description: >-
+        This endpoint calculates fees for a provided offer conditions.
+
+        The quotation is estimated and based on the current configuration of the
+        Allegro price list and the data entered in this API.
+
+        The stated price does not include package discounts.
+
+        The rules of charging and amount of charges are described in the Allegro
+        regulations in Appendix 4.
+
+        The final amount of the fee for the offer will be available after
+        approval under the tab: My Account> Accounts> History.
+        More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-30-Kalkulator_ogloszenia/" target="_blank">here.</a>
+      operationId: previewFeesPublicAPIUsingPOST
+      responses:
+        '200':
+          description: Returns applicable fees
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Wraps_listing_and_commissions_fees'
+        '400':
+          description: Bad request
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '422':
+          description: >-
+            Server understands the content but can not process the requested
+            data (example not existing categoryId)
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+      requestBody:
+        content:
+          application/vnd.allegro.public.v1+json:
+            schema:
+              $ref: '#/components/schemas/Wrapper_type_for_preview_conditions.'
+        description: command
+        required: true
+  '/sale/offer-modification-commands/{commandId}':
+    put:
+      tags:
+        - offer-management
+      summary: 'Modify multiple offers at once.'
+      description: 'Use this resource to modify multiple offers at once. More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-04-19-News_grupowa_edycja_ofert_update/#1" target="_blank">here.</a>'
+      operationId: modificationCommandUsingPUT
+      parameters:
+        - name: commandId
+          in: path
+          description: commandId
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Command was registered
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/GeneralReport'
+        '400':
+          description: Semantically incorrect request or provided conditions not correct
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '409':
+          description: Command id was already used
+        '422':
+          description: Unprocessable Entity
+      requestBody:
+        content:
+          application/vnd.allegro.public.v1+json:
+            schema:
+              $ref: '#/components/schemas/OfferChangeCommand'
+        description: offerChangeCommandDto
+        required: true
+    get:
+      tags:
+        - offer-management
+      summary: 'Get a report summary for a particular commandId'
+      description: 'Use this resource to find out how many offers were edited within one {commandId}. You will receive a summary with a number of successfully edited offers. More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-04-19-News_grupowa_edycja_ofert_update/#2" target="_blank">here.</a>'
+      operationId: getGeneralReportUsingGET
+      parameters:
+        - name: commandId
+          in: path
+          description: commandId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: report was generated and successfully returned
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/GeneralReport'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Command not found
+  '/sale/offer-modification-commands/{commandId}/tasks':
+    get:
+      tags:
+        - offer-management
+      summary: 'Get a detailed report for a single command task'
+      description: 'Use this resource to retrieve a detailed summary of changes introduced within one {commandId} (defaults: limit = 100, offset = 0). More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-04-19-News_grupowa_edycja_ofert_update/#2" target="_blank">here.</a>'
+      operationId: getTasksUsingGET
+      parameters:
+        - name: commandId
+          in: path
+          description: commandId
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: limit
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: offset
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Task status successfully returned
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/TaskReport'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Command not found
+  /sale/categories:
+    get:
+      tags:
+        - offer-management
+      summary: '[BETA] Get IDs of main Allegro categories'
+      description: '[BETA]Use this resource to get IDs of main Allegro categories. More information about this resource you can find <a href="https://developer.allegro.pl/sale/#categories" target="_blank">here.</a>'
+      operationId: getCategoriesUsingGET
+      parameters:
+        - name: parent.id
+          in: query
+          description: parent.id
+          required: false
+          schema:
+            type: string
+            default: 954b95b6-43cf-4104-8354-dea4d9b10ddf
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/CategoriesDto'
+  '/sale/categories/{categoryId}':
+    get:
+      tags:
+        - offer-management
+      summary: '[BETA] Get category by ID'
+      description: '[BETA] Use this resoirce to get the lowest tier category (remember – an offer can be listed in the lowest tier category if the category is marked “leaf”: true). More information about this resource you can find <a href="https://developer.allegro.pl/sale/#categories" target="_blank">here.</a>'
+      operationId: getCategoryUsingGET_1
+      parameters:
+        - name: categoryId
+          in: path
+          description: categoryId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/CategoryDto'
+  '/sale/categories/{categoryId}/parameters':
+    get:
+      tags:
+        - offer-management
+      summary: '[BETA] Get parameters by category ID'
+      description: '[BETA] Use this resoyrce to get the lists of parameters that are supported by the category you indicated. Every time a list of parameters supported by the input category is returned. More information about this resource you can find <a href="https://developer.allegro.pl/sale/#parameters" target="_blank">here.</a>'
+      operationId: getFlatParametersUsingGET_2
+      parameters:
+        - name: categoryId
+          in: path
+          description: categoryId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/CategoryParameterList'
+  /sale/offer-additional-services/definitions:
+    get:
+      tags:
+        - offer-additional-services
+      summary: Get additional services definitions by user ID
+      description: 'Use this resource to get additional services definitions by user ID. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-25-News_uslugi_dodatkowe/#1" target="_blank">here.</a>'
+      parameters:
+        - name: offset
+          in: query
+          description: offset
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          description: limit
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 100
+        - name: user.id
+          in: query
+          description: User ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/DefinitionsResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /sale/shipping-rates:
+    get:
+      tags:
+        - offer-management
+      summary: '[BETA] Get a list of seller''s shipping rates'
+      description: '[BETA] Use this resource to get a list of seller''s shipping rates. More information about this resource you can find <a href="../news/2018-08-14-Cenniki_dostawy/" target="_blank">here</a>.'
+      parameters:
+        - name: seller.id
+          in: query
+          description: id of shipping rates owner
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                type: object
+                properties:
+                  shippingRates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Shipping rate ID
+                        name:
+                          type: string
+                          description: User defined name of the shipping rates set
+              examples:
+                response:
+                  value:
+                    - id: 758fcd59-fbfa-4453-ae07-4800d72c2ca5
+                      name: Mój cennik
+        '401':
+          description: Authentication required
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '403':
+          description: Unauthorized
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+    post:
+      tags:
+        - offer-management
+      summary: 'Create a new seller''s shipping rates set'
+      description: 'Use this resource to create a new seller''s shipping rates set. More information about this resource you can find <a href="../news/2018-08-14-Cenniki_dostawy/" target="_blank">here</a>.'
+      requestBody:
+          description: Shipping rates set
+          required: true
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/ShippingRatesSet'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: "#/components/schemas/ShippingRatesSet"
+        '401':
+          description: Authentication required
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '422':
+          description: The user has reached the limit of shipping rates sets. Information on the limit will be returned in the error message.
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+  '/sale/shipping-rates/{id}':
+    get:
+      tags:
+        - offer-management
+      summary: '[BETA] Get details of the given shipping rates set'
+      description: '[BETA] Use this resource to get details of the given shipping rates set. More information about this resource you can find <a href="../news/2018-08-14-Cenniki_dostawy" target="_blank">here</a>.'
+      parameters:
+        - name: id
+          in: path
+          description: id of shipping rates set
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: "#/components/schemas/ShippingRatesSet"
+              examples:
+                response:
+                  value:
+                    id: 758fcd59-fbfa-4453-ae07-4800d72c2ca6
+                    name: Mój cennik
+                    rates:
+                      - deliveryMethod:
+                          id: 758fcd59-fbfa-4453-ae07-4800d72c2ca5
+                        maxQuantityPerPackage: 6
+                        firstItemRate:
+                          amount: '12.00'
+                          currency: PLN
+                        nextItemRate:
+                          amount: '2.50'
+                          currency: PLN
+                        shippingTime:
+                          from: P1D
+                          to: P20D
+                    lastModified: '2018-04-05T12:20:23.974Z'
+        '401':
+          description: Authentication required
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '403':
+          description: Unauthorized
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '404':
+          description: Shipping rates set with given ID not found
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+    put:
+      tags:
+        - offer-management
+      summary: 'Edit seller''s shipping rates set'
+      description: 'Use this resource to edit a new seller''s shipping rates set. More information about this resource you can find <a href="../news/2018-08-14-Cenniki_dostawy/" target="_blank">here</a>.'
+      parameters:
+        - name: id
+          in: path
+          description: id of shipping rates set
+          required: true
+          schema:
+            type: string
+      requestBody:
+          description: Shipping rates set
+          required: true
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: "#/components/schemas/ShippingRatesSet"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: "#/components/schemas/ShippingRatesSet"
+        '401':
+          description: Authentication required
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '404':
+          description: Set with given id does not exist
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+  '/points-of-service':
+    post:
+      tags:
+        - points-of-service
+      summary: 'Create a point of service'
+      description: 'Use this resource to create a point of servic. More information about this resource you can find <a href="https://developer.allegro.pl/en/news/2017-08-11-Punkty_odbioru/#1" target="_blank">here.</a>'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Pos'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+      requestBody:
+        $ref: '#/components/requestBodies/Pos'
+    get:
+      tags:
+        - points-of-service
+      summary: 'Get a list of points of service by seller ID'
+      description: 'Use this resource to get a list of points of service by seller ID. More information about this resource you can find <a href="https://developer.allegro.pl/en/news/2017-08-11-Punkty_odbioru/#3" target="_blank">here.</a>'
+      parameters:
+        - name: seller.id
+          in: query
+          description: User ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/SearchResult'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+  '/points-of-service/{id}':
+    get:
+      tags:
+        - points-of-service
+      summary: 'Get details of a point of service for a given ID'
+      description: 'Use this resource to get a details of a point of service for a given ID. More information about this resource you can find <a href="https://developer.allegro.pl/en/news/2017-08-11-Punkty_odbioru/#4" target="_blank">here.'
+      parameters:
+        - name: id
+          in: path
+          description: Point of service ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Pos'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+    put:
+      tags:
+        - points-of-service
+      summary: 'Modify a point of service'
+      description: 'Use this resource to modify a point of service. More information about this resource you can find <a href="https://developer.allegro.pl/en/news/2017-08-11-Punkty_odbioru/#2" target="_blank">here.'
+      parameters:
+        - name: id
+          in: path
+          description: >-
+            Point of service ID. Must match values with 'id' property from the
+            body.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Pos'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+      requestBody:
+        $ref: '#/components/requestBodies/Pos'
+    delete:
+      tags:
+        - points-of-service
+      summary: 'Delete a point of service'
+      description: 'Use this resource to delete a point of service. More information about this resource you can find <a href="https://developer.allegro.pl/en/news/2017-08-11-Punkty_odbioru/#5" target="_blank">here.'
+      parameters:
+        - name: id
+          in: path
+          description: Point of service ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+  /sale/offer-contacts:
+    post:
+      tags:
+        - offer-contacts
+      summary: 'Create a new contact'
+      description: 'Use this resource to create a new contact. More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-01-17-news_zarzadzanie_kontaktami/#1" target="_blank">here.</a>'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/ContactResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      requestBody:
+        content:
+          application/vnd.allegro.public.v1+json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+        description: New contact
+        required: true
+    get:
+      tags:
+        - offer-contacts
+      summary: Get details of many contacts
+      description: 'Use this resource to get details of many contacts. More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-01-17-news_zarzadzanie_kontaktami/#4" target="_blank">here.</a>'
+      parameters:
+        - name: seller.id
+          in: query
+          description: id of contacts owner
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/ContactResponseList'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  '/sale/offer-contacts/{id}':
+    get:
+      tags:
+        - offer-contacts
+      summary: Get contact details
+      description: 'Use this resource to get contact details. More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-01-17-news_zarzadzanie_kontaktami/#3" target="_blank">here.</a>'
+      parameters:
+        - name: id
+          in: path
+          description: Contact id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/ContactResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+    put:
+      tags:
+        - offer-contacts
+      summary: Modify contact details
+      description: 'Use this resource to modify contact details. More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-01-17-news_zarzadzanie_kontaktami/#2" target="_blank">here.</a>'
+      parameters:
+        - name: id
+          in: path
+          description: Contact id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/ContactResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      requestBody:
+        content:
+          application/vnd.allegro.public.v1+json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+        description: Contact
+        required: true
+  /sale/delivery-methods:
+    get:
+      tags:
+        - offer-management
+      summary: '[BETA] Get a list of available delivery methods'
+      description: '[BETA] Use this resource to get a list of available delivery methods. More information about this resource you can find <a href="../news/2018-08-14-Cenniki_dostawy/" target="_blank">here</a>.'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                type: object
+                properties:
+                  deliveryMethods:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Delivery method ID
+                        name:
+                          type: string
+                          description: Delivery method name
+              examples:
+                response:
+                  value:
+                    - id: 758fcd59-fbfa-4453-ae07-4800d72c2ca5
+                      name: List polecony priorytetowy
+        '401':
+          description: Authentication required
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+  '/sale/offer-additional-services/groups/{groupId}':
+    get:
+      tags:
+        - offer-additional-services
+      summary: Get additional services group for a given ID
+      description: 'Use this resource to get additional services group for a given ID. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-25-News_uslugi_dodatkowe/#5" target="_blank">here.</a>'
+      parameters:
+        - name: groupId
+          in: path
+          description: Additional Service Group ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/AdditionalServicesGroupResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+    put:
+      tags:
+        - offer-additional-services
+      summary: Modify existing additional service group
+      description: 'Use this resource to modify existing additional service group. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-25-News_uslugi_dodatkowe/#3" target="_blank">here.</a>'
+      parameters:
+        - name: groupId
+          in: path
+          description: additional service group ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/AdditionalServicesGroupResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      requestBody:
+        $ref: '#/components/requestBodies/AdditionalServicesGroupRequest'
+  '/sale/size-tables/{tableId}':
+    get:
+      tags:
+        - size-tables
+      summary: '[BETA] Get selected size table'
+      description: '[BETA] Use this resource to get selected size table. More information about this resource you can find <a href="https://developer.allegro.pl/en/news/2018-04-19-News_Tabele_rozmiarow/" target="_blank">here.</a>'
+      operationId: getTableUsingGET
+      parameters:
+        - name: tableId
+          in: path
+          description: tableId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Size table returned successfully
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/PublicTableDto'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /after-sales-service-conditions/return-policies:
+    get:
+      tags:
+        - after-sales-service-conditions
+      summary: Get seller return policies listing
+      description: 'Use this resource to get seller return policies listing. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-04-05-News_warunki_oferty/" target="_blank">here.</a>'
+      operationId: getPublicSellerListingUsingGET_1
+      parameters:
+        - name: sellerId
+          in: query
+          description: sellerId
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: limit
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: offset
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/ReturnPoliciesList_ReturnPolicyBasic_'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /sale/size-tables:
+    get:
+      tags:
+        - size-tables
+      summary: '[BETA] Get all size tables assigned to a seller account'
+      description: '[BETA] Use this resource to get all size tables assigned to a seller account. More information about this resource you can find <a href="https://developer.allegro.pl/en/news/2018-04-19-News_Tabele_rozmiarow/" target="_blank">here.</a>'
+      operationId: getTablesUsingGET
+      parameters:
+        - name: user.id
+          in: query
+          description: user.id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Size tables returned successfully
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/PublicTablesDto'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /after-sales-service-conditions/implied-warranties:
+    get:
+      tags:
+        - after-sales-service-conditions
+      summary: Get seller implied warranties listing
+      description: 'Use this resource to get seller implied warranties listing. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-04-05-News_warunki_oferty/" target="_blank">here.</a>'
+      operationId: getPublicSellerListingUsingGET
+      parameters:
+        - name: sellerId
+          in: query
+          description: sellerId
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: limit
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: offset
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: >-
+                  #/components/schemas/ImpliedWarrantiesList_ImpliedWarrantyBasic_
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /pricing/offer-quotes:
+    get:
+      tags:
+        - pricing
+      summary: Get current offer quotes for authenticated user and list of offers.
+      description: >-
+        This endpoint returns current offer quotes (listing and promo fees)
+        cycles for authenticated user and list of offers.
+        More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-02-14-Zasob_do_sprawdzania_daty_oplaty/" target="_blank">here.</a>
+        <br/>2018-07-18 - resource update <a href="https://developer.allegro.pl/news/2018-07-18-Aktualizacja_Zasob_do_sprawdzania_daty_oplaty/" target="_blank">here.</a>
+      operationId: offerQuotesPublicUsingGET
+      parameters:
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: offer.id
+          in: query
+          description: 'List of offer ids, maximum 20 values'
+          required: true
+          allowEmptyValue: false
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Returns current offer quotes
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/OfferQuotesDto'
+        '400':
+          description: Invalid request.
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/ErrorsHolder'
+        '401':
+          description: Full authentication is required to access this resource
+        '503':
+          description: Service is currently unavailable. Please try again later.
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/ErrorsHolder'
+  '/sale/loyalty/promotions/{promotionId}':
+    get:
+      tags:
+        - promotions
+      summary: Get a promotion by its id
+      description: 'Use this resource to returns the requested promotion. You need to use its unique id. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-18-News_promocyjne_zestawy_ofert/#3" target="_blank">here (Bundles)</a> and <a href="https://developer.allegro.pl/news/2018-02-01-Rabaty_ilosciowe/#3" target="_blank">here (Multipack)</a>.'
+      operationId: getPromotionUsingGET
+      parameters:
+        - name: promotionId
+          in: path
+          description: promotionId
+          required: true
+          schema:
+            type: string
+        - name: details
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: authenticated
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successfully returned the requested promotion
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/SellerRebateDto'
+        '404':
+          description: Promotion not found
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+    delete:
+      tags:
+        - promotions
+      summary: Deactivate promotion by its id
+      description: 'Use this resource to deactivate the requested promotion. You need to use its unique id. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-10-18-News_promocyjne_zestawy_ofert/#4" target="_blank">here (Bundles)</a> and <a href="https://developer.allegro.pl/news/2018-02-01-Rabaty_ilosciowe/#4" target="_blank">here (Multipack)</a>.'
+      operationId: deactivatePromotionUsingDELETE
+      parameters:
+        - name: promotionId
+          in: path
+          description: promotionId
+          required: true
+          schema:
+            type: string
+        - name: details
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: authenticated
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '204':
+          description: Successfully deactivated the requested promotion
+        '404':
+          description: Promotion not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '422':
+          description: Promotion cannot be reactivated
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+  /after-sales-service-conditions/warranties:
+    get:
+      tags:
+        - after-sales-service-conditions
+      summary: Get seller warranties listing
+      description: 'Use this resource to get seller warranties listing. More information about this resource you can find <a href="https://developer.allegro.pl/news/2017-04-05-News_warunki_oferty/" target="_blank">here.</a>'
+      operationId: getPublicSellerListingUsingGET_2
+      parameters:
+        - name: sellerId
+          in: query
+          description: sellerId
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: limit
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: offset
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/WarrantiesList_WarrantyBasic_'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/sale/offer-variants/{setId}':
+    put:
+      tags:
+        - offer-variants
+      summary: Create or update variant set
+      description: >-
+        Use this resource to create or update variant set.
+        More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-07-09-Wielowariantowosc/#03" target="_blank">here.</a>
+      operationId: createOrUpdateVariantSet
+      parameters:
+        - name: setId
+          in: path
+          description: Variant set id
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Variant set created or updated successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: Unprocessable Entity
+      requestBody:
+        $ref: '#/components/requestBodies/VariantSetRequest'
+    get:
+      tags:
+        - offer-variants
+      summary: 'Get variant set'
+      description: 'Use this resource to get variant set by set id. More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-07-09-Wielowariantowosc/#04" target="_blank">here.</a>'
+      operationId: getVariantSet
+      parameters:
+        - name: setId
+          in: path
+          description: setId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Variant set returned successfully
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/VariantSet'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+    delete:
+      tags:
+        - offer-variants
+      summary: Delete variant set
+      description: >-
+        Use this resource to delete variant set by id.
+        Offers included in variant set will not be stopped or modified by this operation.
+        More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-07-09-Wielowariantowosc/#05" target="_blank">here.</a>
+      operationId: deleteVariantSet
+      parameters:
+        - name: setId
+          in: path
+          description: Variant set id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Variant set deleted successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Variant set not found
+  '/sale/offer-variants':
+    get:
+      tags:
+        - offer-variants
+      summary: Get created variant sets.
+      description: >-
+        Use this resource to get created variant sets.
+        The returned variant sets are ordered by name.
+        More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-07-09-Wielowariantowosc/" target="_blank">here.</a>
+      operationId: getVariantSets
+      parameters:
+        - name: user.id
+          in: query
+          description: Filter by user id, you are allowed to get your variant sets only.
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: Index of first returned variant set.
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of returned variant sets.
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+        - name: query
+          in: query
+          description: Filter variant sets by name or offer id.
+          required: false
+          schema:
+            type: string
+            maxLength: 50
+      responses:
+        '200':
+          description: Variant sets returned successfully
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/VariantSets'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /offers/listing:
+    get:
+      tags:
+        - offers-listing
+      summary: Get search results combined with navigable categories and filters.
+      description: >-
+        Use this resource to get a list of offers according to provided parameters.
+        At least one of: phrase, seller.id or category.id is required.
+        Additional available parameters vary depending on category.id. The
+        parameters are defined in the filters entity.
+        More information about this resource you can find <a href="https://developer.allegro.pl/news/2018-07-03-Listing_ofert/" target="_blank">here.</a>
+      operationId: getListing
+      parameters:
+        - name: category.id
+          in: query
+          description: The category identifier to search.
+          required: false
+          schema:
+            type: string
+        - name: phrase
+          in: query
+          description: Search phrase.
+          required: false
+          schema:
+            type: string
+        - name: seller.id
+          in: query
+          description: >-
+            Identifier of the seller. May be provided more than once. Only items
+            of provided sellers are returned.
+          required: false
+          schema:
+            type: string
+        - name: searchMode
+          in: query
+          description: >-
+            Search mode. Allowed values: *REGULAR* - searching for a phrase in
+            the title of offers; *DESCRIPTIONS* - searching for a phrase in
+            titles and offers descriptions; *CLOSED* -  searching for a phrase in
+            titles of closed offers. Default *REGULAR*.
+          required: false
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: >-
+            Index of first returned offer from all search results. Must be
+            multiple of *limit*.
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: >-
+            Maximum number of offers in response (acceptable values: from 0 to
+            100, default is 60).
+          required: false
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          description: >-
+            Search results sorting order. Allowed values (+ or no prefix means
+            ascending order, - prefix means descending order): relevance,
+            +price, -price, +withDeliveryPrice, -withDeliveryPrice, -popularity,
+            +endTime, -startTime. The default sorting order is relevancy.
+          required: false
+          schema:
+            type: string
+        - name: include
+          in: query
+          description: >-
+            Specify parts that should be included in the output. Allowed values
+            are names of top level entities and *all* as an alias to all
+            entities. By default, all top level entities are included. Use "-"
+            prefix to exclude entity. Example:
+            *include=-all&include=filters&include=sort* - returns only filters
+            and sort entities.
+          required: false
+          schema:
+            type: string
+        - name: fallback
+          in: query
+          description: >-
+            Defines behaviour of searching when no results with exact phrase
+            match are found: *true* - related (not exact) results are returned;
+            *false* - empty results are returned. The default is true.
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/vnd.allegro.public.v1+json:
+              schema:
+                $ref: '#/components/schemas/ListingResponse'
+        '400':
+          description: Bad request. Check if all necessary parameters are provided.
+        '404':
+          description: Given category was not found. Check category.id parameter.
+        '422':
+          description: >-
+            One of parameters have invalid value or given parameters combination
+            is forbidden.
+        '500':
+          description: Internal service error.
+        '502':
+          description: Error caused by upstream service failure.
+  '/order/events':
+    get:
+      tags:
+        - order-management
+      summary: Get order events
+      description: >-
+              Use this resource to returns events that allow you to monitor actions which clients perform, i.e.
+              making a purchase, filling in the checkout form (FOD), finishing payment process, making a surcharge.
+              More information about this resource you can find <a href="/orders/#02" target="_blank">here.</a>
+      parameters:
+        - name: from
+          in: query
+          description: 'You can use the event ID to retrieve subsequent chunks of events'
+          required: false
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: >-
+            Specify array of event types for filtering.
+            Allowed values are:
+              * `BOUGHT`: purchase without checkout form filled in
+              * `FILLED_IN`: checkout form filled in but payment is not completed yet so data could still change
+              * `READY_FOR_PROCESSING`: payment completed. Purchase is ready for processing.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: limit
+          in: query
+          description: 'Limit in the range of 1-1000'
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/OrderEventsList'
+        '401':
+          description: Unauthorized
+  '/order/event-stats':
+    get:
+      tags:
+        - order-management
+      summary: Get order event statistics
+      description: >-
+              Use this resource to returns object that contains event id and occurrence date of the latest event.
+              It gives you current starting point for reading events.
+              More information about this resource you can find <a href="/orders/#02" target="_blank">here.</a>
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/OrderEventStats'
+        '401':
+          description: Unauthorized
+  '/order/checkout-forms':
+    get:
+      tags:
+        - order-management
+      summary: Get order list
+      description: >-
+              Use this resource to get an order list. 
+              More information about this resource you can find <a href="/orders/#03" target="_blank">here.</a>
+      parameters:
+        - name: offset
+          in: query
+          description: Index of first returned checkout-form from all search results.
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: >-
+            Maximum number of checkout-forms in response (acceptable values: from 0 to
+            100, default is 100).
+          required: false
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+          description: >
+            Specify status value that checkout-forms must have to be included in the output.
+            Allowed values are:
+              * `BOUGHT`: purchase without checkout form filled in
+              * `FILLED_IN`: checkout form filled in but payment is not completed yet so data could still change
+              * `READY_FOR_PROCESSING`: payment completed. Purchase is ready for processing.
+              * `ALL`: return all checkout-forms
+        - name: lineItems.boughtAt.lte
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: The upper bound of date time range from which checkout forms will be taken.
+        - name: lineItems.boughtAt.gte
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: The lower bound of date time range from which checkout forms will be taken.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/CheckoutForms'
+        '400':
+          description: >
+            Bad Request - Returned when request parameters contains illegal values.
+        '401':
+          description: Unauthorized
+        '422':
+          description: >
+            Unprocessable Entity - Returned when limit or offset value is outside an acceptable range
+
+
+
+  '/order/checkout-forms/{id}':
+    get:
+      tags:
+        - order-management
+      summary: Get order details
+      description: >-
+              Use this resource to get an order details. 
+              More information about this resource you can find <a href="/orders/#04" target="_blank">here.</a>
+      parameters:
+        - name: id
+          in: path
+          description: Checkout Form id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "29738e61-7f6a-11e8-ac45-09db60ede9d6"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.allegro.beta.v1+json:
+              schema:
+                $ref: '#/components/schemas/CheckoutForm'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+
+components:
+  requestBodies:
+    Pos:
+      content:
+        application/vnd.allegro.public.v1+json:
+          schema:
+            $ref: '#/components/schemas/Pos'
+      description: Point of service
+      required: true
+    Offer:
+      content:
+        application/vnd.allegro.beta.v1+json:
+          schema:
+            $ref: '#/components/schemas/Offer'
+      description: offer
+      required: true
+    AdditionalServicesGroupRequest:
+      content:
+        application/vnd.allegro.public.v1+json:
+          schema:
+            $ref: '#/components/schemas/AdditionalServicesGroupRequest'
+      description: Additional service group body
+      required: true
+    VariantSetRequest:
+      content:
+        application/vnd.allegro.beta.v1+json:
+          schema:
+            $ref: '#/components/schemas/VariantSet'
+      description: |
+        A valid variant set must consist of three required elements:
+        - name:
+          - it can't be blank and must not be longer than 50 characters
+        - parameters:
+          - it should contain parameter identifiers used for offer grouping
+          - parameter identifiers from the offers and special `color/pattern` value (for grouping via image) are permitted
+          - it must contain at least one element (up to 2)
+        - offers:
+          - it must contain at least 2 offers (500 at most)
+          - `colorPattern` value must be set for every offer if `color/pattern` parameter is used
+          - `colorPattern` value can't be blank and must not be longer than 50 characters
+          - `colorPattern` can take arbitrary string value like `red`, `b323592c-522f-4ec1-b9ea-3764538e0ac4` (UUID), etc.
+          - offers having the same image should have identical `colorPattern` value
+
+        Let's assume we have 4 offers:
+          - offer with id 2 having an image of a red t-shirt and S as a value of parameter with id 21
+          - offer with id 3 having an image of a red t-shirt and M as a value of parameter with id 21
+          - offer with id 4 having an image of a blue t-shirt and S as a value of parameter with id 21
+          - offer with id 5 having an image of a blue t-shirt and M as a value of parameter with id 21
+
+        You can build a variant set by grouping offers using combination of available parameters:
+          - variant set with offer parameter only
+          ```
+            {
+              "name": "t-shirt",
+              "offers": [
+                {
+                  "id": "2"
+                },
+                {
+                  "id": "3"
+                }
+              ],
+              "parameters": [
+                { "id": "21" }
+              ]
+            }
+          ```
+          - variant set with `color/pattern` parameter only
+          ```
+            {
+              "name": "t-shirt",
+              "offers": [
+                {
+                  "id": "2",
+                  "colorPattern": "red"
+                },
+                {
+                  "id": "4",
+                  "colorPattern": "blue"
+                }
+              ],
+              "parameters": [
+                {"id": "color/pattern"}
+              ]
+            }
+          ```
+          - variant set with offer and `color/pattern` parameters
+          ```
+            {
+              "name": "t-shirt",
+              "offers": [
+                {
+                  "id": "2",
+                  "colorPattern": "red"
+                },
+                {
+                  "id": "3",
+                  "colorPattern": "red"
+                },
+                {
+                  "id": "4",
+                  "colorPattern": "blue"
+                },
+                {
+                  "id": "5",
+                  "colorPattern": "blue"
+                }
+              ],
+              "parameters": [
+                {"id": "color/pattern"},
+                {"id": "21"}
+              ]
+            }
+          ```
+
+          More information about variant sets can be found [here](https://allegro.pl/pomoc/faq/wielowariantowosc-jak-polaczyc-oferty-xGgaOByGgTb#dodatkowe-informacje).
+      required: true
+  schemas:
+    AdditionalServiceDefinitionRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+    AdditionalServiceRequest:
+      type: object
+      required:
+        - configurations
+        - definition
+        - description
+      properties:
+        definition:
+          $ref: '#/components/schemas/AdditionalServiceDefinitionRequest'
+        description:
+          type: string
+        configurations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Configuration'
+    AdditionalServiceResponse:
+      type: object
+      properties:
+        configurations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Configuration'
+        definition:
+          $ref: '#/components/schemas/BasicDefinitionResponse'
+        description:
+          type: string
+    AdditionalServicesGroup:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of additional service group
+    AdditionalServicesGroupRequest:
+      type: object
+      required:
+        - additionalServices
+        - name
+      properties:
+        name:
+          type: string
+        additionalServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdditionalServiceRequest'
+    AdditionalServicesGroupResponse:
+      type: object
+      properties:
+        additionalServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdditionalServiceResponse'
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        name:
+          type: string
+        seller:
+          $ref: '#/components/schemas/Reference'
+    AdditionalServicesGroups:
+      type: object
+      properties:
+        additionalServicesGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdditionalServicesGroupResponse'
+    Address:
+      type: object
+      required:
+        - city
+        - countryCode
+        - state
+        - zipCode
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        zipCode:
+          type: string
+        state:
+          type: string
+        countryCode:
+          type: string
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+    AfterSalesServices:
+      type: object
+      properties:
+        impliedWarranty:
+          $ref: '#/components/schemas/JustId'
+        returnPolicy:
+          $ref: '#/components/schemas/JustId'
+        warranty:
+          $ref: '#/components/schemas/JustId'
+    Answer:
+      type: object
+      required:
+        - createdAt
+        - message
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+          example: '2017-05-17T08:36:57.292+02:00'
+          description: Answer creation datetime in ISO 8601 format
+        message:
+          type: string
+          description: Answer message
+    AvailableConstraint:
+      type: object
+      properties:
+        type:
+          type: string
+          description: >-
+            One of the type COUNTRY_SAME_QUANTITY or
+            COUNTRY_DELIVERY_SAME_QUANTITY
+        availableDeliveryMethods:
+          type: array
+          items:
+            type: string
+    AverageRates:
+      type: object
+      properties:
+        delivery:
+          type: number
+          format: double
+          example: 4.7
+          description: Average value of delivery rate
+          minimum: 0
+          maximum: 5
+        deliveryCost:
+          type: number
+          format: double
+          example: 5
+          description: Average value of delivery cost rate
+          minimum: 0
+          maximum: 5
+        description:
+          type: number
+          format: double
+          example: 4.5
+          description: Average value of description rate
+          minimum: 0
+          maximum: 5
+        service:
+          type: number
+          format: double
+          example: 4.8
+          description: Average value of service rate
+          minimum: 0
+          maximum: 5
+    BasicDefinitionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+    Benefit:
+      type: object
+      required:
+        - specification
+      properties:
+        specification:
+          $ref: '#/components/schemas/BenefitSpecification'
+    BenefitSpecification:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+    Caption:
+      type: object
+      required:
+        - index
+        - value
+      properties:
+        index:
+          type: string
+        value:
+          type: string
+      title: Caption
+    CategoriesDto:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryDto'
+      title: CategoriesDto
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+    CategoryDto:
+      type: object
+      properties:
+        id:
+          type: string
+        leaf:
+          type: boolean
+        name:
+          type: string
+        options:
+          $ref: '#/components/schemas/CategoryOptionsDto'
+        parent:
+          $ref: '#/components/schemas/CategoryIdDto'
+      title: CategoryDto
+    CategoryIdDto:
+      type: object
+      properties:
+        id:
+          type: string
+      title: CategoryIdDto
+    CategoryOptionsDto:
+      type: object
+      properties:
+        advertisement:
+          type: boolean
+        advertisementPriceOptional:
+          type: boolean
+      title: CategoryOptionsDto
+    Cells:
+      type: object
+      required:
+        - cells
+      properties:
+        cells:
+          type: array
+          items:
+            type: string
+      title: Cells
+    ChangePrice:
+      type: object
+      required:
+        - input
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        input:
+          $ref: '#/components/schemas/ChangePriceInput'
+        output:
+          $ref: '#/components/schemas/CommandOutput'
+      description: The change price command with its input and output data
+    ChangePriceInput:
+      type: object
+      required:
+        - buyNowPrice
+      properties:
+        buyNowPrice:
+          $ref: '#/components/schemas/MonetaryAmount'
+      description: Change price command's input data
+    ChangePriceWithoutOutput:
+      type: object
+      required:
+        - input
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        input:
+          $ref: '#/components/schemas/ChangePriceInput'
+      description: The change price command's input data
+    CommandOutput:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ProcessingStatus'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+      description: Command's output data
+    CommandTask:
+      type: object
+      properties:
+        field:
+          type: string
+          description: Modified field as JSON path
+        finishedAt:
+          type: string
+          format: date-time
+          description: >-
+            Date of completion of the modification. Format (ISO 8601) -
+            yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        message:
+          type: string
+          description: Fail reason description
+        offer:
+          description: Offer identifier
+          $ref: '#/components/schemas/OfferId'
+        scheduledAt:
+          type: string
+          format: date-time
+          description: >-
+            Date of the modification schedule. Format (ISO 8601) -
+            yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        status:
+          type: string
+          description: 'Available statuses: NEW, SUCCESS, FAIL'
+      description: Status of single command task
+    CompatibilityList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompatibilityListItem'
+      description: List of items compatible with offer
+    CompatibilityListItem:
+      type: object
+      properties:
+        text:
+          type: string
+          description: 'text representation of compatible item'
+      description: Item compatible with offer
+    Configuration:
+      type: object
+      properties:
+        constraints:
+          $ref: '#/components/schemas/ConstraintCriteria'
+        price:
+          $ref: '#/components/schemas/Price'
+    ConstraintCriteria:
+      type: object
+      properties:
+        country:
+          type: string
+        type:
+          type: string
+    ContactRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        emails:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailRequest'
+        phones:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhonesRequest'
+    ContactResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        emails:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailResponse'
+        phones:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhonesResponse'
+    ContactResponseList:
+      type: object
+      properties:
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactResponse'
+    Coordinates:
+      type: object
+      required:
+        - lat
+        - lon
+      properties:
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+    DefinitionsResponse:
+      type: object
+      properties:
+        definitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FullDefinitionResponse'
+    Delivery:
+      type: object
+      properties:
+        additionalInfo:
+          type: string
+        handlingTime:
+          type: string
+          example: PDT12H30M5S
+          description: 'Handling time, ISO 8601 duration format'
+        shipmentDate:
+          type: string
+          format: date-time
+          example: '2018-04-01T08:00:00Z'
+          description: 'Shipment date, Format (ISO 8601) - yyyy-MM-dd''T''HH:mm:ss.SSSZ'
+        shippingRates:
+          $ref: '#/components/schemas/JustId'
+    DescriptionSection:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DescriptionSectionItem'
+    DescriptionSectionItem:
+      type: object
+      description: 'One of: TextItem, ImageItem'
+      oneOf:
+        - $ref: '#/components/schemas/DescriptionSectionItemText'
+        - $ref: '#/components/schemas/DescriptionSectionItemImage'
+      discriminator:
+        propertyName: type
+      required:
+        - type
+    DescriptionSectionItemText:
+        type: object
+        properties:
+          content:
+            type: string
+    DescriptionSectionItemImage:
+        type: object
+        properties:
+          url:
+            type: string
+    EmailRequest:
+      type: object
+      properties:
+        address:
+          type: string
+    EmailResponse:
+      type: object
+      properties:
+        address:
+          type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        details:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        userMessage:
+          type: string
+    Errors:
+      type: object
+      title: Errors
+    ErrorsHolder:
+      type: object
+      properties:
+        errors:
+          $ref: '#/components/schemas/Errors'
+      title: ErrorsHolder
+    Fee:
+      type: object
+      properties:
+        amount:
+          type: string
+        currency:
+          type: string
+      title: Fee
+    FullDefinitionResponse:
+      type: object
+      properties:
+        availableConstraints:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailableConstraint'
+        description:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+    GeneralReport:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Command ID
+        taskCount:
+          description: Tasks information
+          $ref: '#/components/schemas/TaskCount'
+      description: Command execution summary
+    Header:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+      title: Header
+    ImageUrl:
+      type: object
+      properties:
+        url:
+          type: string
+      description: Image url
+    ImpliedWarrantyBasic:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    JustId:
+      type: object
+      properties:
+        id:
+          type: string
+    Location:
+      type: object
+      properties:
+        city:
+          type: string
+        countryCode:
+          type: string
+        postCode:
+          type: string
+        province:
+          type: string
+    Modification:
+      type: object
+      properties:
+        additionalServicesGroup:
+          description: AdditionalServicesGroup modification
+          $ref: '#/components/schemas/AdditionalServicesGroup'
+        delivery:
+          $ref: '#/components/schemas/ModificationDelivery'
+        payments:
+          description: Payments modification
+          $ref: '#/components/schemas/ModificationPayments'
+        promotion:
+          description: Promotion modification
+          $ref: '#/components/schemas/ModificationPromotion'
+        sizeTable:
+          description: SizeTable modification
+          $ref: '#/components/schemas/ModificationSizeTable'
+      description: Contains fields to change
+    ModificationDelivery:
+      type: object
+      properties:
+        shippingRates:
+          $ref: '#/components/schemas/ShippingRates'
+      description: Contains shipping rates to change
+    ModificationPayments:
+      type: object
+      properties:
+        invoice:
+          type: string
+          description: 'Invoice type: VAT, VAT_MARGIN, WITHOUT_VAT, NO_INVOICE'
+          enum:
+            - VAT
+            - VAT_MARGIN
+            - WITHOUT_VAT
+            - NO_INVOICE
+    ModificationPromotion:
+      type: object
+      properties:
+        bold:
+          type: boolean
+          example: false
+          description: 'Bold flag: true, false, null'
+        departmentPage:
+          type: boolean
+          example: false
+          description: 'DepartmentPage flag: true, false, null'
+        emphasized:
+          type: boolean
+          example: false
+          description: 'Emphasized flag: true, false, null'
+        emphasizedHighlightBoldPackage:
+          type: boolean
+          example: false
+          description: 'EmphasizedHighlightBoldPackage flag: true, false, null'
+        highlight:
+          type: boolean
+          example: false
+          description: 'Highlight flag: true, false, null'
+    ModificationSizeTable:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of size table
+    MonetaryAmount:
+      type: object
+      properties:
+        amount:
+          type: string
+        currency:
+          type: string
+    Offer:
+      type: object
+      required:
+        - name
+      properties:
+        additionalServices:
+          $ref: '#/components/schemas/JustId'
+        afterSalesServices:
+          $ref: '#/components/schemas/AfterSalesServices'
+        category:
+          $ref: '#/components/schemas/Category'
+        compatibilityList:
+          $ref: '#/components/schemas/CompatibilityList'
+        contact:
+          $ref: '#/components/schemas/JustId'
+        createdAt:
+          type: string
+          format: date-time
+          description: >-
+            Creation date: Format (ISO 8601) - yyyy-MM-dd'T'HH:mm:ss.SSSZ.
+            Cannot be modified
+        delivery:
+          $ref: '#/components/schemas/Delivery'
+        description:
+          $ref: '#/components/schemas/OfferDescription'
+        ean:
+          type: string
+        external:
+          $ref: '#/components/schemas/JustId'
+        id:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageUrl'
+        location:
+          $ref: '#/components/schemas/Location'
+        name:
+          type: string
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Parameter'
+        payments:
+          $ref: '#/components/schemas/Payments'
+        promotion:
+          $ref: '#/components/schemas/Promotion'
+        publication:
+          $ref: '#/components/schemas/Publication'
+        sellingMode:
+          $ref: '#/components/schemas/SellingMode'
+        sizeTable:
+          $ref: '#/components/schemas/JustId'
+        stock:
+          $ref: '#/components/schemas/Stock'
+        updatedAt:
+          type: string
+          format: date-time
+          description: >-
+            Last update date: Format (ISO 8601) - yyyy-MM-dd'T'HH:mm:ss.SSSZ.
+            Cannot be modified
+        validation:
+          $ref: '#/components/schemas/Validation'
+      description: Single offer data
+    OfferChangeCommand:
+      type: object
+      properties:
+        modification:
+          description: Fields to change
+          $ref: '#/components/schemas/Modification'
+        offerCriteria:
+          type: array
+          description: List of offer criteria
+          items:
+            $ref: '#/components/schemas/OfferCriterium'
+      description: Modification command payload
+    OfferCriterion:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+    OfferCriterium:
+      type: object
+      properties:
+        offers:
+          type: array
+          description: Set of offers
+          items:
+            $ref: '#/components/schemas/OfferId'
+        type:
+          type: string
+          description: 'Criteria type: CONTAINS_OFFERS'
+          enum:
+            - CONTAINS_OFFERS
+      description: Contains offers criteria
+    OfferDescription:
+      type: object
+      properties:
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/DescriptionSection'
+    OfferId:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Offer id
+    OfferQuoteDto:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        fee:
+          $ref: '#/components/schemas/Fee'
+        name:
+          type: string
+        nextDate:
+          type: string
+          format: date-time
+        offer:
+          $ref: '#/components/schemas/Offer'
+        type:
+          type: string
+      title: OfferQuoteDto
+    OfferQuotesDto:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        quotes:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferQuoteDto'
+      title: OfferQuotesDto
+    OpenHour:
+      type: object
+      required:
+        - dayOfWeek
+        - from
+        - to
+      properties:
+        dayOfWeek:
+          type: string
+          description: >-
+            Days of the week: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY,
+            SATURDAY, SUNDAY. Date format ISO 8601
+        from:
+          type: string
+          description: 'Date format (ISO 8601) - HH:mm:ss.SSS'
+        to:
+          type: string
+          description: 'Date format (ISO 8601) - HH:mm:ss.SSS'
+    Order:
+      type: object
+      required:
+        - id
+        - offers
+      properties:
+        id:
+          type: string
+          description: Order id
+        offers:
+          type: array
+          description: List of order offers
+          items:
+            $ref: '#/components/schemas/Offer'
+    Parameter:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        rangeValue:
+          $ref: '#/components/schemas/ParameterRangeValue'
+        values:
+          type: array
+          items:
+            type: string
+        valuesIds:
+          type: array
+          items:
+            type: string
+      description: Offer's parameter
+    CategoryParameter:
+      type: object
+      required:
+        - type
+      discriminator:
+        propertyName: type
+        mapping:
+          INTEGER: '#/components/schemas/IntegerCategoryParameter'
+          FLOAT: '#/components/schemas/FloatCategoryParameter'
+          STRING: '#/components/schemas/StringCategoryParameter'
+          DICTIONARY: '#/components/schemas/DictionaryCategoryParameter'
+      anyOf:
+        - $ref: '#/components/schemas/IntegerCategoryParameter'
+        - $ref: '#/components/schemas/FloatCategoryParameter'
+        - $ref: '#/components/schemas/StringCategoryParameter'
+        - $ref: '#/components/schemas/DictionaryCategoryParameter'
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          example: 'INTEGER, FLOAT, STRING, DICTIONARY'
+        required:
+          type: boolean
+        unit:
+          type: string
+    DictionaryCategoryParameter:
+      allOf:
+        - $ref: '#/components/schemas/CategoryParameter'
+        - type: object
+          properties:
+            restrictions:
+              type: object
+              properties:
+                multipleChoices:
+                  type: boolean
+            dictionary:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  value:
+                    type: string
+    IntegerCategoryParameter:
+      allOf:
+        - $ref: '#/components/schemas/CategoryParameter'
+        - type: object
+          properties:
+            restrictions:
+              type: object
+              properties:
+                min:
+                  type: integer
+                max:
+                  type: integer
+                range:
+                  type: boolean
+    FloatCategoryParameter:
+      allOf:
+        - $ref: '#/components/schemas/CategoryParameter'
+        - type: object
+          properties:
+            restrictions:
+              type: object
+              properties:
+                min:
+                  type: integer
+                max:
+                  type: integer
+                range:
+                  type: boolean
+                precision:
+                  type: integer
+    StringCategoryParameter:
+      allOf:
+        - $ref: '#/components/schemas/CategoryParameter'
+        - type: object
+          properties:
+            restrictions:
+              type: object
+              properties:
+                minLength:
+                  type: integer
+                maxLength:
+                  type: integer
+    ParameterRangeValue:
+      type: object
+      required:
+        - from
+        - to
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+      description: Parameter's range value
+    CategoryParameterList:
+      type: object
+      properties:
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryParameter'
+    Payment:
+      type: object
+      required:
+        - method
+      properties:
+        method:
+          type: string
+          description: 'Available forms of payment: CASH - cash, CARD - card.'
+    Payments:
+      type: object
+      properties:
+        invoice:
+          type: string
+          description: 'Invoice type, one of: VAT, VAT_MARGIN, WITHOUT_VAT, NO_INVOICE'
+    PhonesRequest:
+      type: object
+      properties:
+        number:
+          type: string
+    PhonesResponse:
+      type: object
+      properties:
+        number:
+          type: string
+    Pos:
+      type: object
+      required:
+        - address
+        - confirmationType
+        - name
+        - openHours
+        - status
+        - type
+      properties:
+        id:
+          type: string
+          description: >-
+            UUID. When creating a point of service (Post) the field is ignored.
+            It is required when updating (Put) a point of service.
+        externalId:
+          type: string
+          description: ID from external client system.
+        name:
+          type: string
+        seller:
+          $ref: '#/components/schemas/Seller'
+        type:
+          type: string
+          description: Indicates point type. The only valid value so far is PICKUP_POINT.
+        address:
+          $ref: '#/components/schemas/Address'
+        phoneNumber:
+          type: string
+        email:
+          type: string
+        openHours:
+          type: array
+          description: Possible empty list of opening hours.
+          items:
+            $ref: '#/components/schemas/OpenHour'
+        serviceTime:
+          type: string
+          description: >-
+            Delivery time / Time period for receipt. Date format ISO 8601 e.g.
+            'PT24H'
+        payments:
+          type: array
+          description: An empty list of payment types is available.
+          items:
+            $ref: '#/components/schemas/Payment'
+        confirmationType:
+          type: string
+          description: >-
+            Confirmation method: AWAIT_CONTACT - We will inform you about the
+            time of receipt, CALL_US - Please make an appointment,
+            CONTACT_NOT_REQUIRED - Contact is not required.
+        status:
+          type: string
+          description: >-
+            Point of service status: ACTIVE - active, TEMPORARILY_CLOSED -
+            temporarily closed, CLOSED_DOWN - closed down, DELETED - deleted.
+        createdAt:
+          type: string
+          description: 'Creation date. Date format (ISO 8601) - yyyy-MM-dd''T''HH:mm:ss.SSSZ'
+        updatedAt:
+          type: string
+          description: >-
+            Modification date. Date format (ISO 8601) -
+            yyyy-MM-dd'T'HH:mm:ss.SSSZ
+    Price:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: string
+          example: '123.45'
+        currency:
+          type: string
+          example: 'PLN'
+    ProcessingStatus:
+      type: string
+      description: Command processing status
+      enum:
+        - QUEUEING
+        - RUNNING
+        - VALIDATED_AND_RUNNING
+        - RUNNING_BUT_WITH_ERRORS
+        - SUCCESSFUL
+        - PARTIAL_SUCCESS
+        - ERROR
+    Promotion:
+      type: object
+      properties:
+        bold:
+          type: boolean
+        departmentPage:
+          type: boolean
+        emphasized:
+          type: boolean
+        emphasizedHighlightBoldPackage:
+          type: boolean
+        highlight:
+          type: boolean
+    PublicTableDto:
+      type: object
+      required:
+        - headers
+        - name
+        - orientation
+        - values
+      properties:
+        headers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Header'
+        id:
+          type: string
+        image:
+          $ref: '#/components/schemas/PublicTableImageDto'
+        name:
+          type: string
+        orientation:
+          type: string
+          enum:
+            - HORIZONTAL
+            - VERTICAL
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cells'
+      title: PublicTableDto
+    PublicTableImageDto:
+      type: object
+      required:
+        - captions
+        - url
+      properties:
+        captions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Caption'
+        url:
+          type: string
+      title: PublicTableImageDto
+    PublicTablesDto:
+      type: object
+      required:
+        - tables
+      properties:
+        tables:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicTableDto'
+      title: PublicTablesDto
+    Publication:
+      type: object
+      properties:
+        duration:
+          type: string
+          example: PDT12H30M5S
+          description: 'Publication duration, ISO 8601 duration format'
+        endingAt:
+          type: string
+          format: date-time
+          description: >-
+            Publication ending date: Format (ISO 8601) -
+            yyyy-MM-dd'T'HH:mm:ss.SSSZ. Cannot be modified
+        startingAt:
+          type: string
+          format: date-time
+          description: >-
+            Publication starting date: Format (ISO 8601) -
+            yyyy-MM-dd'T'HH:mm:ss.SSSZ. Cannot be modified
+        status:
+          type: string
+          description: 'Publication status, one of: INACTIVE, ACTIVATING, ACTIVE, ENDED'
+    PublicationChangeCommandDto:
+      type: object
+      properties:
+        offerCriteria:
+          type: array
+          description: List of offer criteria
+          items:
+            $ref: '#/components/schemas/OfferCriterium'
+        publication:
+          description: Fields to change
+          $ref: '#/components/schemas/Publication_modification'
+      description: Publication modification command payload
+    Rates:
+      type: object
+      required:
+        - delivery
+        - deliveryCost
+        - description
+        - service
+      properties:
+        delivery:
+          type: integer
+          format: int32
+          example: 5
+          description: Delivery rate value
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+        deliveryCost:
+          type: integer
+          format: int32
+          example: 5
+          description: Delivery cost rate value
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+        description:
+          type: integer
+          format: int32
+          example: 5
+          description: Description rate value
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+        service:
+          type: integer
+          format: int32
+          example: 5
+          description: Service rate value
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+    Reference:
+      type: object
+      properties:
+        id:
+          type: string
+    Removal:
+      type: object
+      required:
+        - possibleTo
+      properties:
+        possibleTo:
+          type: string
+          format: date-time
+          example: '2017-05-17T08:36:57.292+02:00'
+          description: Date until a removal request can be submitted in ISO 8601 format
+        request:
+          description: 'Submitted removal request, null if removal was not requested'
+          $ref: '#/components/schemas/RemovalRequest'
+    RemovalRequest:
+      type: object
+      required:
+        - createdAt
+        - message
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+          example: '2017-05-17T08:36:57.292+02:00'
+          description: Removal request creation datetime in ISO 8601 format
+        message:
+          type: string
+          description: Message containing explanation for removing rating
+    ReturnPolicyBasic:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    SearchResult:
+      properties:
+        posList:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pos'
+    Seller:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+    SellerCreateRebateRequestDto:
+      type: object
+      required:
+        - benefits
+        - offerCriteria
+      properties:
+        benefits:
+          type: array
+          items:
+            $ref: '#/components/schemas/Benefit'
+        offerCriteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferCriterion'
+    SellerRebateDto:
+      type: object
+      required:
+        - benefits
+        - id
+        - offerCriteria
+        - status
+      properties:
+        benefits:
+          type: array
+          items:
+            $ref: '#/components/schemas/Benefit'
+        createdAt:
+          type: string
+        id:
+          type: string
+        offerCriteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferCriterion'
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - SUSPENDED
+    SellerRebatesDto:
+      type: object
+      required:
+        - promotions
+        - totalCount
+      properties:
+        promotions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SellerRebateDto'
+        totalCount:
+          type: integer
+          format: int64
+    SellingMode:
+      type: object
+      properties:
+        format:
+          type: string
+          description: 'Selling mode format, one of: BUY_NOW, AUCTION, ADVERTISEMENT'
+        minimalPrice:
+          $ref: '#/components/schemas/Price'
+        price:
+          $ref: '#/components/schemas/Price'
+        startingPrice:
+          $ref: '#/components/schemas/Price'
+      description: Offer's selling mode
+    ShippingRates:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of shipping rates
+    ShippingRatesSet:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Shipping rates set ID
+        name:
+          type: string
+          description: User defined name of the shipping rates set
+        rates:
+          type: object
+          properties:
+            deliveryMethod:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: ID of the delivery method
+            maxQuantityPerPackage:
+              type: integer
+              description: >-
+                Maximum quantity per package for the given delivery
+                method. Minimum value is 1.
+              minimum: 1
+            firstItemRate:
+              type: object
+              description: >-
+                Rate for the first item in the parcel for the given
+                delivery method
+              properties:
+                amount:
+                  type: string
+                  description: Amount
+                currency:
+                  type: string
+                  description: ISO 4217 currency code
+            nextItemRate:
+              type: object
+              description: >-
+                Rate for every other item, after the first, in the
+                same parcel for the given delivery method
+              properties:
+                amount:
+                  type: string
+                  description: Amount
+                currency:
+                  type: string
+                  description: ISO 4217 currency code
+            shippingTime:
+              type: object
+              description: >-
+                Custom shipping time for the given delivery method. If
+                not set the default shipping time for the method is
+                used.
+              properties:
+                from:
+                  type: string
+                  description: 'ISO 8601 duration format, e.g. P3D for 3 days'
+                to:
+                  type: string
+                  description: 'ISO 8601 duration format, e.g. P3D for 3 days'
+          required:
+            - deliveryMethod
+            - firstItemRate
+            - maxQuantityPerPackage
+            - nextItemRate
+        lastModified:
+          type: string
+          description: >-
+            Date and time of the last modification of the set in UTC
+            ISO 8601 format
+    Stock:
+      type: object
+      properties:
+        available:
+          type: integer
+          format: int32
+        unit:
+          type: string
+          description: 'Stock unit, one of: UNIT, PAIR, SET'
+    Summary:
+      type: object
+      required:
+        - total
+        - unique
+      properties:
+        total:
+          type: integer
+          format: int64
+          example: 100
+          description: Number of total users
+        unique:
+          type: integer
+          format: int64
+          example: 100
+          description: Number of unique users
+    TaskCount:
+      type: object
+      properties:
+        failed:
+          type: integer
+          format: int32
+          description: Current number of failed offers updates
+        success:
+          type: integer
+          format: int32
+          description: Current number of success offers updates
+        total:
+          type: integer
+          format: int32
+          description: Total number of scheduled offers updates
+      description: Offers updates summary
+    TaskReport:
+      type: object
+      properties:
+        tasks:
+          type: array
+          description: List of task results
+          items:
+            $ref: '#/components/schemas/CommandTask'
+      description: Contains list of task results
+    UUID:
+      type: string
+      description: >-
+        Universally Unique Identifier (UUID) generated by you that can be used
+        to enforce idempotency. UUID specification:
+        http://www.ietf.org/rfc/rfc4122.txt
+    User:
+      type: object
+      required:
+        - id
+        - login
+      properties:
+        id:
+          type: string
+          description: Buyer id
+        login:
+          type: string
+          description: Buyer's login
+    UserRating:
+      type: object
+      required:
+        - buyer
+        - comment
+        - createdAt
+        - id
+        - recommended
+      properties:
+        answer:
+          description: 'Seller''s answer, if null seller did not publish answer'
+          $ref: '#/components/schemas/Answer'
+        buyer:
+          description: Buyer who created rating
+          $ref: '#/components/schemas/User'
+        comment:
+          type: string
+          description: Buyer's text comment
+        createdAt:
+          type: string
+          format: date-time
+          example: '2017-05-17T08:36:57.292+02:00'
+          description: Creation datetime in ISO 8601 format
+        excludedFromAverageRates:
+          type: boolean
+          example: false
+          description: >-
+            If true this rating was not included in calculating average user
+            rates
+        id:
+          type: string
+          description: Rating id
+        order:
+          description: Rated order
+          $ref: '#/components/schemas/Order'
+        rates:
+          description: Given rates
+          $ref: '#/components/schemas/Rates'
+        recommended:
+          type: boolean
+          example: false
+          description: Whether buyer recommends the order
+        removal:
+          description: Data regarding removal of rating
+          $ref: '#/components/schemas/Removal'
+    UserRatingListResponse:
+      type: object
+      required:
+        - ratings
+      properties:
+        ratings:
+          type: array
+          description: >-
+            List of ratings that match requested filter. Empty when no rating
+            matched.
+          items:
+            $ref: '#/components/schemas/UserRating'
+    UserRatingSummaryResponse:
+      type: object
+      required:
+        - notRecommended
+        - recommended
+        - recommendedPercentage
+      properties:
+        averageRates:
+          $ref: '#/components/schemas/AverageRates'
+        notRecommended:
+          description: Summary of data concerning users that not recommended the seller
+          $ref: '#/components/schemas/Summary'
+        recommended:
+          description: Summary of data concerning users that recommended the seller
+          $ref: '#/components/schemas/Summary'
+        recommendedPercentage:
+          type: string
+          example: '1'
+          description: Percentage of unique buyers recommending seller
+    Validation:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        validatedAt:
+          type: string
+          format: date-time
+    ValidationError:
+      type: object
+      properties:
+        code:
+          type: string
+        details:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        userMessage:
+          type: string
+    WarrantyBasic:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    Describes_listing_fee:
+      type: object
+      required:
+        - fee
+        - name
+        - type
+      properties:
+        fee:
+          $ref: '#/components/schemas/Fee'
+        name:
+          type: string
+        type:
+          type: string
+    Describes_success_commission_fee:
+      type: object
+      required:
+        - fee
+        - name
+        - type
+      properties:
+        fee:
+          $ref: '#/components/schemas/Fee'
+        name:
+          type: string
+        type:
+          type: string
+    ImpliedWarrantiesList_ImpliedWarrantyBasic_:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        impliedWarranties:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImpliedWarrantyBasic'
+    Parameters_used_for_preview_price._Note_that_quantity_or_soldQuantity_have_to_be_set_for_offer.type_advertisement_.:
+      type: object
+      required:
+        - category
+        - unitPrice
+      properties:
+        category:
+          description: Leaf category id
+          $ref: '#/components/schemas/Category'
+        condition:
+          type: string
+          description: 'Offer condition, if is new, used or other.'
+          enum:
+            - NEW
+            - USED
+            - OTHER
+        duration:
+          type: string
+          enum:
+            - PT72H
+            - PT120H
+            - PT168H
+            - PT240H
+            - PT336H
+            - PT480H
+            - PT720H
+        hasAnyQuantity:
+          type: boolean
+        numberOfBigPhotos:
+          type: integer
+          format: int32
+          description: 'If set, minimum value 0'
+        numberOfPhotos:
+          type: integer
+          format: int32
+          description: 'If set, minimum value 0'
+        quantity:
+          type: integer
+          format: int32
+          description: 'Quantity of items to be sold. If set, minimum value 1'
+        shop:
+          type: boolean
+          example: false
+          description: >-
+            Deprecated. Value 'true' sets the 'offer.type' field to 'shop',
+            value 'false' to 'offer'. This field is ignored if 'offer.type'
+            field is set.
+        soldQuantity:
+          type: integer
+          format: int32
+          description: >-
+            Quantity of sold items. Relates to commission success fee. If set,
+            minimum value 1
+        type:
+          type: string
+          description: >-
+            Offer type. 'type' or 'shop' fields must be provided. Takes
+            precedence over 'shop' field
+          enum:
+            - shop
+            - offer
+            - advertisement
+        unitPrice:
+          type: number
+        bold:
+          type: boolean
+        highlight:
+          type: boolean
+        departmentPage:
+          type: boolean
+        emphasized:
+          type: boolean
+        emphasizedHighlightBoldPackage:
+          type: boolean
+    Publication_modification:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Action to perform
+          enum:
+            - ACTIVATE
+            - END
+        scheduledFor:
+          type: string
+          format: date-time
+          description: >-
+            Date and time for scheduling ACTIVATE action, will be ignored for
+            another actions
+      description: Contains publication's fields to change
+    ReturnPoliciesList_ReturnPolicyBasic_:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        returnPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReturnPolicyBasic'
+    WarrantiesList_WarrantyBasic_:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        warranties:
+          type: array
+          items:
+            $ref: '#/components/schemas/WarrantyBasic'
+    Wrapper_type_for_preview_conditions.:
+      type: object
+      properties:
+        includeQuotingBundles:
+          type: boolean
+          example: false
+          description: >-
+            Include in calculation user's active bundles which allow to publish
+            for free offer or use for free promotion options.
+        offer:
+          $ref: >-
+            #/components/schemas/Parameters_used_for_preview_price._Note_that_quantity_or_soldQuantity_have_to_be_set_for_offer.type_advertisement_.
+    Wraps_listing_and_commissions_fees:
+      type: object
+      required:
+        - commissions
+        - quotes
+      properties:
+        commissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Describes_success_commission_fee'
+        quotes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Describes_listing_fee'
+    VariantSet:
+      type: object
+      required:
+        - offers
+        - name
+        - parameters
+      properties:
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantSet_Offer'
+        name:
+          type: string
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantSet_Parameter'
+      example:
+        name: 't-shirt'
+        offers:
+          - id: '2'
+            colorPattern: red
+          - id: '3'
+            colorPattern: red
+          - id: '4'
+            colorPattern: blue
+          - id: '5'
+            colorPattern: blue
+        parameters:
+          - 'color/pattern'
+          - '21'
+    VariantSet_Offer:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        colorPattern:
+          type: string
+          description: >-
+            Label that allows to group variants via image. All variants having the same image should have identical identifier in this field.
+    VariantSet_Parameter:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+    VariantSets:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Total number of variant sets matching the query.
+        offerVariants:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantSets_VariantSet'
+      example:
+        count: 10
+        offerVariants:
+          - id: 459fd49f-461f-4230-b22a-daff449b8548
+            name: t-shirts
+          - id: 70e6effe-7ae6-45f6-8566-80867f466d0a
+            name: shoes
+    VariantSets_VariantSet:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Variant set id.
+        name:
+          type: string
+          description: Variant set name.
+    ListingOffer:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of the item.
+        name:
+          type: string
+          description: Name of the item.
+        seller:
+          $ref: '#/components/schemas/OfferSeller'
+        promotion:
+          $ref: '#/components/schemas/OfferPromotion'
+        delivery:
+          $ref: '#/components/schemas/OfferDelivery'
+        images:
+          type: array
+          description: >-
+            Gallery of images. Only URL of original size image is provided.
+            First image should be considered as a thumbnail on listing.
+          items:
+            $ref: '#/components/schemas/OfferImages'
+        sellingMode:
+          $ref: '#/components/schemas/OfferSellingMode'
+        stock:
+          $ref: '#/components/schemas/OfferStock'
+        vendor:
+          $ref: '#/components/schemas/OfferVendor'
+        category:
+          $ref: '#/components/schemas/OfferCategory'
+        publication:
+          $ref: '#/components/schemas/OfferPublication'
+    ListingCategory:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Category id.
+        name:
+          type: string
+          description: Category name.
+        count:
+          type: integer
+          description: >-
+            Results count in this category (available only for
+            categories.subcategories array).
+    ListingResponse:
+      type: object
+      properties:
+        items:
+          $ref: '#/components/schemas/ListingResponseOffers'
+        categories:
+          $ref: '#/components/schemas/ListingResponseCategories'
+        filters:
+          type: array
+          description: >-
+            Filters with counters available for given search, which can be used
+            to refine search results.
+          items:
+            $ref: '#/components/schemas/ListingResponseFilters'
+        searchMeta:
+          $ref: '#/components/schemas/ListingResponseSearchMeta'
+        sort:
+          type: array
+          description: Available sorting options.
+          items:
+            $ref: '#/components/schemas/ListingResponseSort'
+    OfferSellerContactPhones:
+      properties:
+        number:
+          type: string
+          description: Phone number.
+    OfferSellerContact:
+      properties:
+        phones:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferSellerContactPhones'
+      description: Optional contact details for items with advertisement selling format.
+    OfferSeller:
+      properties:
+        id:
+          type: string
+          description: Identifier of the seller.
+        company:
+          type: boolean
+          description: Indicates whether the seller is a company.
+        superSeller:
+          type: boolean
+          description: Indicates whether the item has Super Seller option.
+        contact:
+          $ref: '#/components/schemas/OfferSellerContact'
+      description: Information about the seller of the item.
+    OfferStock:
+      properties:
+        unit:
+          type: string
+          description: 'Unit type of the item (UNIT, PAIR or SET).'
+        available:
+          type: integer
+          description: Number of items available to buy.
+      description: Information about stock.
+    OfferPromotion:
+      properties:
+        emphasized:
+          type: boolean
+          description: Indicates whether the item is promoted.
+        bold:
+          type: boolean
+          description: Indicates whether the item has bold title option.
+        highlight:
+          type: boolean
+          description: Indicates whether the item has highlight option.
+      description: Information about promotion options of the item.
+    OfferLowestPrice:
+      properties:
+        amount:
+          type: number
+          description: Currency amount.
+        currency:
+          type: string
+          description: Currency code.
+      description: >-
+        Lowest shipping cost. Lack of this entity means that the item has no
+        shipping options (ie. advertisement or an item with electronic delivery
+        only).
+    OfferPrice:
+      properties:
+        amount:
+          type: number
+          description: Currency amount.
+        currency:
+          type: string
+          description: Currency code.
+      description: >-
+        Price of the item. It is buy now price for *BUY_NOW* selling format or
+        current auction price for *AUCTION* format.
+    OfferFixedPrice:
+      properties:
+        amount:
+          type: number
+          description: Currency amount.
+        currency:
+          type: string
+          description: Currency code.
+      description: >-
+        Fixed (buy now) price of the item in case of *AUCTION* selling format
+        with buy now option enabled.
+    OfferDelivery:
+      properties:
+        availableForFree:
+          type: boolean
+          description: Indicates whether the item has free shipping option.
+        lowestPrice:
+          $ref: '#/components/schemas/OfferLowestPrice'
+      description: Information about available shipping options for the item.
+    OfferImages:
+      properties:
+        url:
+          type: string
+          description: URL of original size image.
+    OfferSellingMode:
+      properties:
+        format:
+          type: string
+          description: '*BUY_NOW*, *AUCTION* or *ADVERTISEMENT*'
+        price:
+          $ref: '#/components/schemas/OfferPrice'
+        fixedPrice:
+          $ref: '#/components/schemas/OfferFixedPrice'
+        popularity:
+          type: integer
+          description: Popularity of item for *BUY_NOW* selling format.
+        bidCount:
+          type: integer
+          description: Number of bidders for *AUCTION* selling format.
+      description: This section indicates selling format and prices.
+    OfferCategory:
+      properties:
+        id:
+          type: string
+          description: Identifier of the category.
+    OfferVendor:
+      properties:
+        id:
+          type: string
+          description: >-
+            Identifier of external service (OTOMOTO, OTODOM,
+            CHARYTATYWNI_ALLEGRO).
+        url:
+          type: string
+          description: URL to the web page of advertisement.
+      description: >-
+        This section is available only for advertisements, linking to external
+        services.
+    OfferPublication:
+      properties:
+        endingAt:
+          type: string
+          description: Publication ending time.
+      description: >-
+        This section is available only for items with defined end of
+        publication.
+    ListingResponseOffers:
+      properties:
+        promoted:
+          type: array
+          description: List of promoted offers.
+          items:
+            $ref: '#/components/schemas/ListingOffer'
+        regular:
+          type: array
+          description: List of regular (non-promoted) offers.
+          items:
+            $ref: '#/components/schemas/ListingOffer'
+      description: Lists of search results.
+    ListingResponseCategories:
+      properties:
+        subcategories:
+          type: array
+          description: >-
+            Categories with counters, which can be used to refine search
+            results.
+          items:
+            $ref: '#/components/schemas/ListingCategory'
+        path:
+          type: array
+          description: Categories path to the current listing category (breadcrumbs).
+          items:
+            $ref: '#/components/schemas/ListingCategory'
+      description: Information about categories.
+    ListingResponseFiltersValues:
+      properties:
+        name:
+          type: string
+          description: >-
+            Name of the option;
+            for NUMERIC parameters - word indicating start or end of range (ie. *from*, *to*).
+        value:
+          type: string
+          description: >-
+            Filter value. Should be used as query parameter value in
+            request. This can be: for MULTI and SINGLE parameters - value
+            identifier (ie. KUJAWSKO_POMORSKIE option in location.province filter);
+            for other types - value entered by user.
+        idSuffix:
+          type: string
+          description: Suffix used as a second part of query parameter key to be used in request
+            (the first part is filter id). Applicable for NUMERIC values only.
+        count:
+          type: integer
+          description: Number of search results matching this filter value.
+        selected:
+          type: boolean
+          description: Indicates whether this filter value is used in current request.
+    ListingResponseFilters:
+      properties:
+        id:
+          type: string
+          description: Identifier of the filter. Should be used as query parameter key,
+           optionally followed by idSuffix from parameter value (only for NUMERIC filters).
+        type:
+          type: string
+          description: >-
+            MULTI - multiple choice filter, SINGLE - single select (dropdown)
+            filter, NUMERIC - range of numeric values (search offers with value
+            matching this range), NUMERIC_SINGLE - single numeric value (search
+            offers with given value matching the range defined in offer), TEXT -
+            filter allowing user to input any text
+        name:
+          type: string
+          description: Name of the filter.
+        values:
+          type: array
+          description: Available filter values.
+          items:
+            $ref: '#/components/schemas/ListingResponseFiltersValues'
+        minValue:
+          type: number
+          description: Minimum valid value for filters of type NUMERIC.
+        maxValue:
+          type: number
+          description: Maximum valid value for filters of type NUMERIC.
+    ListingResponseSearchMeta:
+      properties:
+        availableCount:
+          type: integer
+          description: >-
+            Number of results available for navigation. If this number is less
+            than the total count, search criteria (categories, filters) should
+            be narrowed down to make all results available.
+        totalCount:
+          type: integer
+          description: Total number of search results for given parameters.
+        fallback:
+          type: boolean
+          description: >-
+            Indicates whether search fallback was used. If true, no items
+            matching exact given phrase were found and related items are
+            presented.
+      description: Search metadata.
+    ListingResponseSort:
+      properties:
+        value:
+          type: string
+          description: Query parameter value which should be used for this sorting option.
+        name:
+          type: string
+          description: Sorting option name.
+        order:
+          type: string
+          description: Order label specifying ascending or descending mode.
+        selected:
+          type: boolean
+          description: Indicates whether this sorting options is used in current request.
+      description: Available sort options.
+
+    OrderEventsList:
+      type: object
+      required:
+        - events
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderEvent'
+      description: Order events list
+    OrderEvent:
+      type: object
+      required:
+        - id
+        - order
+        - type
+        - occuredAt
+      properties:
+        id:
+          type: string
+          description: event id
+        order:
+          $ref: '#/components/schemas/OrderEventData'
+        type:
+          $ref: '#/components/schemas/CheckoutFormStatus'
+        occuredAt:
+          type: string
+          format: date-time
+          example: '2018-10-12T10:12:32.321Z'
+          description: 'Date when the event occurred'
+      description: Order event
+    OrderEventData:
+      type: object
+      required:
+        - buyer
+        - lineItems
+        - seller
+      properties:
+        seller:
+          $ref: '#/components/schemas/SellerReference'
+        buyer:
+          $ref: '#/components/schemas/BuyerReference'
+        lineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLineItem'
+        checkoutForm:
+          $ref: '#/components/schemas/CheckoutFormReference'
+      description: Order event data
+    SellerReference:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          example: "437848322"
+      description: Seller identifier
+    OfferReference:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          example: "3213213"
+        name:
+          type: string
+          description: 'Offer name'
+          example: "Name of purchased offer"
+      description: Offer identifier
+    BuyerReference:
+      type: object
+      required:
+        - email
+        - login
+        - guest
+        - id
+      properties:
+        id:
+          type: string
+          description: buyer id
+          example: "23123123"
+        email:
+          type: string
+          example: "user-email@allegro.pl"
+        login:
+          type: string
+          example: "User_Login"
+        guest:
+          type: boolean
+          description: is a guest account?
+          example: false
+      description: Buyer data
+    OrderLineItem:
+      type: object
+      required:
+        - offer
+        - price
+        - id
+        - quantity
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Order item identifier
+          example: "62ae358b-8f65-4fc4-9c77-bedf604a2e2b"
+        offer:
+          $ref: '#/components/schemas/OfferReference'
+        quantity:
+          type: number
+          format: integer
+          description: quantity
+          example: 1
+        originalPrice:
+          $ref: '#/components/schemas/Price'
+        price:
+          $ref: '#/components/schemas/Price'
+        boughtAt:
+          type: string
+          format: date-time
+          description: ISO date when offer was bought
+          example: "2018-01-01T10:23:43.123Z"
+      description: Order item
+    OrderEventStats:
+      type: object
+      properties:
+        latestEvent:
+          $ref: '#/components/schemas/LatestOrderEvent'
+          description: Latest event
+      description: Event statistics, currently contains only basic information about the latest event.
+    LatestOrderEvent:
+      type: object
+      required:
+        - id
+        - occuredAt
+      properties:
+        id:
+          type: string
+          description: event id
+        occuredAt:
+          type: string
+          format: date-time
+          example: '2018-10-12T10:12:32.321Z'
+          description: 'Date when the event occurred'
+      description: Basic information about the latest order event.
+    CheckoutFormReference:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          example: "88ae369b-8f65-4fc4-9c77-bedf604a2e2b"
+      description: Checkout form identifier
+    CheckoutFormStatus:
+        enum:
+          - BOUGHT
+          - FILLED_IN
+          - READY_FOR_PROCESSING
+        example: "READY_FOR_PROCESSING"
+        description: >
+          Describes status of the form delivery and purchase options based on payment and purchase status.
+          * `BOUGHT` - purchase without checkout form filled in
+          * `FILLED_IN` - checkout form filled in but payment is not completed yet so data could still change
+          * `READY_FOR_PROCESSING` - payment completed. Purchase is ready for processing.
+    CheckoutForms:
+      type: object
+      required:
+        - count
+        - totalCount
+        - checkoutForms
+      properties:
+        checkoutForms:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckoutForm'
+        count:
+          type: number
+          format: integer
+          description: number of returned objects
+          example: 1
+        totalCount:
+          type: number
+          format: integer
+          description: >
+            Number of all objects of requested status(es) available (regardless of the provided limit and offset)
+          example: 1
+    CheckoutForm:
+      type: object
+      required:
+        - id
+        - buyer
+        - status
+        - invoice
+        - lineItems
+        - surcharges
+        - summary
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Checkout form id
+          example: "29738e61-7f6a-11e8-ac45-09db60ede9d6"
+        messageToSeller:
+          type: string
+          description: Message from buyer to seller
+          example: "Please send me an item in red color"
+        buyer:
+          $ref: '#/components/schemas/CheckoutFormBuyerReference'
+        payment:
+          $ref: '#/components/schemas/CheckoutFormPaymentReference'
+        status:
+          $ref: '#/components/schemas/CheckoutFormStatus'
+        delivery:
+          $ref: '#/components/schemas/CheckoutFormDeliveryReference'
+        invoice:
+          $ref: '#/components/schemas/CheckoutFormInvoiceInfo'
+        lineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckoutFormLineItem'
+        surcharges:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckoutFormPaymentReference'
+        summary:
+          $ref: '#/components/schemas/CheckoutFormSummary'
+    CheckoutFormBuyerReference:
+      type: object
+      required:
+        - email
+        - login
+        - guest
+        - id
+      properties:
+        id:
+          type: string
+          description: buyer id
+          example: "23123123"
+        email:
+          type: string
+          example: "user-email@allegro.pl"
+        login:
+          type: string
+          example: "User_Login"
+        guest:
+          type: boolean
+          description: is a guest account?
+          example: false
+        personalIdentity:
+          type: string
+          description: Buyer's personal identity number (PESEL)
+          example: "67062589524"
+        phoneNumber:
+          type: string
+          description: Phone number
+          example: "+48999999999"
+      description: Buyer data
+    CheckoutFormPaymentReference:
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Payment id
+          example: "0f8f1d13-7e9e-11e8-9b00-c5b0dfb78ea6"
+        type:
+          $ref: '#/components/schemas/CheckoutFormPaymentType'
+        provider:
+          $ref: '#/components/schemas/CheckoutFormPaymentProvider'
+        finishedAt:
+          type: string
+          format: date-time
+          example: '2018-10-12T10:12:32.321'
+          description: 'Date when the event occurred'
+        paidAmount:
+          $ref: '#/components/schemas/Price'
+    CheckoutFormPaymentType:
+      description: Payment type
+      type: string
+      enum:
+       - CASH_ON_DELIVERY
+       - WIRE_TRANSFER
+       - ONLINE
+    CheckoutFormPaymentProvider:
+      description: Payment provider
+      type: string
+      enum:
+        - P24
+        - PAYU
+    CheckoutFormDeliveryReference:
+      type: object
+      properties:
+        address:
+          $ref: '#/components/schemas/CheckoutFormDeliveryAddress'
+        method:
+          $ref: '#/components/schemas/CheckoutFormDeliveryMethod'
+        pickupPoint:
+          $ref: '#/components/schemas/CheckoutFormDeliveryPickupPoint'
+        cost:
+          $ref: '#/components/schemas/Price'
+    CheckoutFormDeliveryAddress:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - street
+        - city
+        - zipCode
+        - countryCode
+      properties:
+        firstName:
+          type: string
+          description: Receiver's first name
+          example: "Jan"
+        lastName:
+          type: string
+          description: Receiver's last name
+          example: "Kowalski"
+        street:
+          type: string
+          description: Street name
+          example: "Grunwaldzka 182"
+        city:
+          type: string
+          description: City name
+          example: "Poznań"
+        zipCode:
+          type: string
+          description: Postal code
+          example: "60-166"
+        countryCode:
+          type: string
+          description: Country code
+          example: "PL"
+        companyName:
+          type: string
+          description: Company name
+          example: "Allegro.pl sp. z o.o."
+        phoneNumber:
+          type: string
+          description: Phone number
+          example: "+48999999999"
+    CheckoutFormDeliveryMethod:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Delivery method id
+          example: "1fa56f79-4b6a-4821-a6f2-ca9c16d5c925"
+        name:
+          type: string
+          description: Delivery method name
+          example: "Allegro Paczkomaty InPost"
+    CheckoutFormDeliveryPickupPoint:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Delivery point id
+          example: "POZ08A"
+        name:
+          type: string
+          description: Delivery point name
+          example: "Paczkomat POZ08A"
+        description:
+          type: string
+          description: Delivery point description
+          example: "Stacja paliw BP"
+        address:
+          $ref: '#/components/schemas/CheckoutFormDeliveryPickupPointAddress'
+    CheckoutFormDeliveryPickupPointAddress:
+      type: object
+      properties:
+        street:
+          type: string
+          description: Delivery point street name
+          example: "Grunwaldzka 108"
+        zipCode:
+          type: string
+          description: Delivery point postal code
+          example: "60-166"
+        city:
+          type: string
+          description: City name
+          example: "Poznań"
+    CheckoutFormInvoiceInfo:
+      type: object
+      required:
+        - required
+      properties:
+        required:
+          type: boolean
+          description: Is invoice required by buyer?
+          example: true
+        address:
+          $ref: '#/components/schemas/CheckoutFormInvoiceAddress'
+    CheckoutFormInvoiceAddress:
+      type: object
+      required:
+        - street
+        - city
+        - zipCode
+        - countryCode
+      properties:
+        street:
+          type: string
+          description: Street name
+          example: "Grunwaldzka 182"
+        city:
+          type: string
+          description: City name
+          example: "Poznań"
+        zipCode:
+          type: string
+          description: Postal code
+          example: "60-166"
+        countryCode:
+          type: string
+          description: Country code
+          example: "PL"
+        company:
+          $ref: '#/components/schemas/CheckoutFormInvoiceAddressCompany'
+        naturalPerson:
+          $ref: '#/components/schemas/CheckoutFormInvoiceAddressNaturalPerson'
+    CheckoutFormInvoiceAddressCompany:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of a company for which invoice should be issued
+        taxId:
+          type: string
+          description: Tax id
+    CheckoutFormInvoiceAddressNaturalPerson:
+      type: object
+      required:
+        - firstName
+        - lastName
+      properties:
+        firstName:
+          type: string
+          description: Invoice receiver first name
+          example: "Jan"
+        lastName:
+          type: string
+          description: Invoice receiver last name
+          example: "Kowalski"
+    CheckoutFormLineItem:
+      type: object
+      required:
+        - id
+        - offer
+        - quantity
+        - originalPrice
+        - price
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Line item identifier
+          example: "62ae358b-8f65-4fc4-9c77-bedf604a2e2b"
+        offer:
+          $ref: '#/components/schemas/OfferReference'
+        quantity:
+          type: number
+          format: integer
+          description: quantity
+          example: 1
+        originalPrice:
+          $ref: '#/components/schemas/Price'
+        price:
+          $ref: '#/components/schemas/Price'
+        selectedAdditionalServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckoutFormAdditionalService'
+        boughtAt:
+          type: string
+          format: date-time
+          description: ISO date when offer was bought
+          example: "2018-01-01T10:23:43.123"
+      description: Order item
+    CheckoutFormAdditionalService:
+      type: object
+      properties:
+        definitionId:
+          type: string
+          description: Additional service id
+        name:
+          type: string
+          description: Additional service name
+        price:
+          $ref: '#/components/schemas/Price'
+          description: Additional service price
+        quantity:
+          type: integer
+          format: int32
+          description: Quantity of an additional service
+          example: 1
+    CheckoutFormSummary:
+      type: object
+      required:
+        - totalToPay
+      properties:
+        totalToPay:
+          description: Total to pay including additional services and delivery
+          $ref: '#/components/schemas/Price'
+
