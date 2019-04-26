@@ -2,7 +2,7 @@
 Simple interface for Allegro REST API resources
 
 ## Authorization and Tokens ##
-In order to use Allegro REST Api, you have to register your application and authorize it (https://developer.allegroapi.io/auth/).
+In order to use Allegro REST Api, you have to register your application and authorize it (https://developer.api.allegro.pl/auth/).
 
 ### Authorization link ###
 ```php
@@ -30,21 +30,21 @@ $response = $api->refreshAccessToken();
 ```php
 $api = new Api($clientId, $clientSecret, $apiKey, $redirectUri, $accessToken, $refreshToken);
 
-// GET https://allegroapi.io/{resource}
+// GET https://api.allegro.pl/{resource}
 // $api->{resource}->get();
 
-// GET https://allegroapi.io/categories
+// GET https://api.allegro.pl/categories
 $api->categories->get();
 
-// GET https://allegroapi.io/{resource}/{resource_id}
+// GET https://api.allegro.pl/{resource}/{resource_id}
 // $api->{resource}({resource_id})->get();
 
-// GET https://allegroapi.io/categories/2
+// GET https://api.allegro.pl/categories/2
 $api->categories(2)->get();
 
-// PUT https://allegroapi.io/{resource}/{resource_id}/{command-name}-command/{uuid}
+// PUT https://api.allegro.pl/{resource}/{resource_id}/{command-name}-command/{uuid}
 // $api->{resource}({resource_id})->commands()->{command_name}($data);
 
-// PUT https://allegroapi.io/offers/12345/change-price-commands/84c16171-233a-42de-8115-1f1235c8bc0f
+// PUT https://api.allegro.pl/offers/12345/change-price-commands/84c16171-233a-42de-8115-1f1235c8bc0f
 $api->offers(12345)->commands()->change_price($data);
 ```

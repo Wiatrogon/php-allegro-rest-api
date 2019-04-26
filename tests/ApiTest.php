@@ -12,12 +12,12 @@ class ApiTest extends TestCase
     {
         $api = new Allegro\REST\Api('eggs', 'spam', 'ham', 'beans');
 
-        $this->assertEquals('https://allegroapi.io', $api->getUri());
+        $this->assertEquals('https://api.allegro.pl', $api->getUri());
 
-        $this->assertEquals('https://allegroapi.io/categories',
+        $this->assertEquals('https://api.allegro.pl/categories',
                             $api->categories->getUri());
 
-        $this->assertEquals('https://allegroapi.io/categories/12',
+        $this->assertEquals('https://api.allegro.pl/categories/12',
                             $api->categories(12)->getUri());
     }
 
